@@ -1,4 +1,4 @@
-import { R, add, sub, mul, div, eq, MODES, PHASE1_MODES } from "./solver";
+import { R, add, sub, mul, div, eq, MODES } from "./solver";
 import type { Rational, Card, OpSymbol } from "./types";
 
 interface VerifyResult {
@@ -118,15 +118,17 @@ export function verify(
   timeMs: number,
   cards: Card[]
 ): VerifyResult {
-  if (!PHASE1_MODES.includes(mode)) {
-    return { valid: false, error: `mode ${mode} not available in Phase 1` };
-  }
-
   const modeDef = MODES[mode];
   if (!modeDef) return { valid: false, error: `unknown mode: ${mode}` };
 
   if (modeDef.target != null && modeDef.target !== target) {
     return { valid: false, error: `target ${target} does not match mode ${mode} (expected ${modeDef.target})` };
+  }
+
+  if (modeDef.targetRange) {
+    if (target < modeDef.targetRange[0] || target > modeDef.targetRange[1]) {
+      return { valid: false, error: `target ${target} out of range [${modeDef.targetRange[0]}, ${modeDef.targetRange[1]}] for mode ${mode}` };
+    }
   }
 
   if (cards.length !== modeDef.cards) {
