@@ -37,9 +37,6 @@ export default function Home() {
         </Link>
       </div>
 
-      <p className="text-ink-4 text-sm mt-[var(--s-9)]">
-        A learning tool by Alpha School
-      </p>
     </main>
   );
 }
