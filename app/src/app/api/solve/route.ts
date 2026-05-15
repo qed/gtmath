@@ -52,5 +52,6 @@ export async function POST(request: NextRequest) {
     hbEarned: data.hb_earned,
     newBalance: data.new_balance,
     streakDays: data.streak_days,
+    speedBonus: data.speed_bonus ?? 0,
   });
 }

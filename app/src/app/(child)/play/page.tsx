@@ -54,6 +54,7 @@ export default function PlayPage() {
   const [endMs, setEndMs] = useState<number | null>(null);
   const [hbEarned, setHbEarned] = useState<number | null>(null);
   const [newBalance, setNewBalance] = useState<number | null>(null);
+  const [speedBonus, setSpeedBonus] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [flashError, setFlashError] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -86,6 +87,7 @@ export default function PlayPage() {
     setEndMs(null);
     setHbEarned(null);
     setNewBalance(null);
+    setSpeedBonus(0);
     setPhase("playing");
   }
 
@@ -195,6 +197,7 @@ export default function PlayPage() {
         const data = await res.json();
         setHbEarned(data.hbEarned);
         setNewBalance(data.newBalance);
+        setSpeedBonus(data.speedBonus ?? 0);
       }
     } catch {
       // offline -- will queue later
@@ -460,7 +463,9 @@ export default function PlayPage() {
             <div className="fm-result-expr">{tiles[0]?.expr}</div>
             {hbEarned != null && (
               <div className="fm-hb-earned">
-                +{hbEarned} HB{newBalance != null && <span> · Balance: {newBalance} HB</span>}
+                +{hbEarned} HB
+                {speedBonus > 0 && <span className="fm-speed-tag">⚡ Speed bonus!</span>}
+                {newBalance != null && <span> · Balance: {newBalance} HB</span>}
               </div>
             )}
             {submitting && (
