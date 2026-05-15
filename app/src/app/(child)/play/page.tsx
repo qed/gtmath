@@ -67,7 +67,7 @@ export default function PlayPage() {
 
   const fetchProgress = useCallback(async () => {
     try {
-      const res = await fetch("/api/progress");
+      const res = await fetch("/api/progress", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setUnlockedModes(data.unlockedModes);
@@ -96,8 +96,9 @@ export default function PlayPage() {
     };
   }, [phase, startTime]);
 
-  function dealHand() {
-    const h = deal({ mode, onlySolvable: true });
+  function dealHand(m?: number) {
+    const useMode = m ?? mode;
+    const h = deal({ mode: useMode, onlySolvable: true });
     setHand(h);
     const t = h.cards.map(cardToTile);
     setTiles(t);
@@ -113,8 +114,9 @@ export default function PlayPage() {
     setPhase("playing");
   }
 
-  function startReady() {
-    const h = deal({ mode, onlySolvable: true });
+  function startReady(m?: number) {
+    const useMode = m ?? mode;
+    const h = deal({ mode: useMode, onlySolvable: true });
     setHand(h);
     setTiles([]);
     setSelected([]);
@@ -354,7 +356,7 @@ export default function PlayPage() {
                 onClick={() => {
                   if (locked) return;
                   setMode(m);
-                  startReady();
+                  startReady(m);
                 }}
                 className={`fm-mode-pill ${m === mode ? "is-on" : ""} ${locked ? "is-locked" : ""}`}
                 disabled={locked}
@@ -368,25 +370,25 @@ export default function PlayPage() {
 
         {/* Unlock progress pips */}
         {(() => {
-          const nextLocked = ALL_MODES.find((m) => !unlockedModes.includes(m));
-          if (!nextLocked) return null;
-          const prevMode = nextLocked - 1;
-          const count = modeCounts[prevMode] || 0;
+          const nextMode = mode + 1;
+          if (nextMode > 9) return null;
+          if (unlockedModes.includes(nextMode)) return null;
+          const count = modeCounts[mode] || 0;
           const qualified = count >= UNLOCK_THRESHOLD;
           if (qualified) return null;
           const need = UNLOCK_THRESHOLD - count;
           return (
             <div className="fm-qp">
-              <div className="fm-qp-pips" role="progressbar" aria-valuemin={0} aria-valuemax={UNLOCK_THRESHOLD} aria-valuenow={Math.min(count, UNLOCK_THRESHOLD)}>
+              <div className="fm-qp-pips" role="progressbar" aria-valuemin={0} aria-valuemax={UNLOCK_THRESHOLD} aria-valuenow={count}>
                 {Array.from({ length: UNLOCK_THRESHOLD }, (_, i) => (
                   <span key={i} className={`fm-qp-pip ${i < count ? "is-on" : ""}`} style={{ "--i": i } as React.CSSProperties} />
                 ))}
               </div>
               <div className="fm-qp-text">
                 {need === 1 ? (
-                  <span><strong>1 more</strong> {MODES[prevMode].label} solve to unlock {MODES[nextLocked].label}</span>
+                  <span><strong>1 more</strong> {MODES[mode].label} solve to unlock {MODES[nextMode].label}</span>
                 ) : (
-                  <span><strong>{need} more</strong> {MODES[prevMode].label} solves to unlock {MODES[nextLocked].label} · <span className="fm-qp-count">{count}/{UNLOCK_THRESHOLD}</span></span>
+                  <span><strong>{need} more</strong> {MODES[mode].label} solves to unlock {MODES[nextMode].label} · <span className="fm-qp-count">{count}/{UNLOCK_THRESHOLD}</span></span>
                 )}
               </div>
             </div>
@@ -473,7 +475,7 @@ export default function PlayPage() {
         {/* Ready phase */}
         {phase === "ready" && (
           <div className="fm-actions ready">
-            <button className="fm-btn fm-btn-primary" onClick={dealHand} type="button">
+            <button className="fm-btn fm-btn-primary" onClick={() => dealHand()} type="button">
               Solve
               <span className="fm-btn-key">↵</span>
             </button>
@@ -528,7 +530,7 @@ export default function PlayPage() {
               <span className="fm-preview-hint">Saving...</span>
             )}
             <div className="fm-result-actions">
-              <button className="fm-btn fm-btn-primary" onClick={startReady} type="button">
+              <button className="fm-btn fm-btn-primary" onClick={() => startReady()} type="button">
                 Next hand
                 <span className="fm-btn-key">↵</span>
               </button>
@@ -548,7 +550,7 @@ export default function PlayPage() {
               <span>This hand is locked. Deal a new one.</span>
             </div>
             <div className="fm-result-actions">
-              <button className="fm-btn fm-btn-primary" onClick={startReady} type="button">
+              <button className="fm-btn fm-btn-primary" onClick={() => startReady()} type="button">
                 Next hand
                 <span className="fm-btn-key">↵</span>
               </button>
