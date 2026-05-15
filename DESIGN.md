@@ -1,6 +1,6 @@
 # DESIGN.md
 
-Design system for FastMath52, derived from the Alpha Toronto Parents Hub brand and the high-fidelity prototype.
+Design system for GTMath, derived from the Alpha Toronto Parents Hub brand and the high-fidelity prototype.
 
 ## Brand
 

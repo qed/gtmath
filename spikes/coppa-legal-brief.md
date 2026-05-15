@@ -1,11 +1,11 @@
 # COPPA Compliance Legal Review Brief
 
-**Project:** FastMath52 (math card game for Alpha School prospects)
+**Project:** GTMath (math card game for Alpha School prospects)
 **Target users:** Children ages 6-13 + their parents
 **Deadline:** Week 2 go/no-go (before Phase 1 launch)
 **Owner:** Founder + legal counsel
 
-## What FastMath52 Collects from Children
+## What GTMath Collects from Children
 
 | Data | How Collected | Stored Where | Retention |
 |------|---------------|-------------|-----------|
@@ -40,7 +40,7 @@
 
 7. **Weekly email digest:** Every Monday, parents receive an email summarizing their child's game activity. The email contains the child's first name and game stats. Is this permissible under COPPA since the email goes only to verified parents?
 
-8. **Do we qualify for the COPPA "school use" exception?** FastMath52 is operated by Alpha School (a private school) for use by its prospective students. The school has a direct relationship with the families.
+8. **Do we qualify for the COPPA "school use" exception?** GTMath is operated by Alpha School (a private school) for use by its prospective students. The school has a direct relationship with the families.
 
 ## What We Do NOT Do
 

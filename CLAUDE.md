@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**FastMath52** is a math card game (expanded from the classic "Make 24") with 8 difficulty modes (2–9 cards), player accounts, per-mode leaderboards, and a 2-player heads-up duel (War) mode on a shared device. Built for classroom playtesting with ~50 students.
+**GTMath** is a math card game (expanded from the classic "Make 24") with 8 difficulty modes (2–9 cards), player accounts, per-mode leaderboards, and a 2-player heads-up duel (War) mode on a shared device. Built for classroom playtesting with ~50 students.
 
 The repository currently contains only the **design handoff prototype** under `artifacts/design_handoff_fastmath52/design/`. This is a working HTML + React-via-Babel prototype — it is the design reference, not production code. The production app has not yet been built.
 
@@ -18,7 +18,7 @@ npx serve artifacts/design_handoff_fastmath52/design
 python -m http.server -d artifacts/design_handoff_fastmath52/design
 ```
 
-Then open `FastMath52.html` in a browser. Script load order matters — see the `<script>` tags in `FastMath52.html`.
+Then open `GTMath.html` in a browser. Script load order matters — see the `<script>` tags in `GTMath.html`.
 
 ## Architecture: Design Prototype
 
