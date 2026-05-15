@@ -96,11 +96,9 @@ export default function PlayPage() {
     };
   }, [phase, startTime]);
 
-  function dealHand(m?: number) {
-    const useMode = m ?? mode;
-    const h = deal({ mode: useMode, onlySolvable: true });
-    setHand(h);
-    const t = h.cards.map(cardToTile);
+  function dealHand() {
+    if (!hand) return;
+    const t = hand.cards.map(cardToTile);
     setTiles(t);
     setSelected([]);
     setHistory([]);
