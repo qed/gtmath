@@ -186,6 +186,17 @@
   color: var(--ink-4);
 }
 
+.lb-qualify {
+  padding: 16px 20px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--alpha-blue);
+  background: var(--alpha-sky-50);
+  border-top: 1px solid var(--border);
+}
+
 /* Small screens */
 @media (max-width: 520px) {
   .lb-top {

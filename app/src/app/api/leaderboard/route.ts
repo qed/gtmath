@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyChildJwt } from "@/lib/jwt";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -15,13 +16,6 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createServiceClient();
-
-  let dateFilter = "";
-  if (period === "today") {
-    dateFilter = `AND s.created_at >= CURRENT_DATE`;
-  } else if (period === "week") {
-    dateFilter = `AND s.created_at >= CURRENT_DATE - INTERVAL '7 days'`;
-  }
 
   if (metric === "solves") {
     const { data, error } = await supabase.rpc("leaderboard_solves", {
@@ -46,5 +40,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ entries: data ?? [] });
+  let qualify: { solveCount: number; needed: number } | null = null;
+  const childToken = request.cookies.get("child_jwt")?.value;
+  if (childToken) {
+    const auth = await verifyChildJwt(childToken);
+    if (auth) {
+      const already = (data ?? []).some((e: { child_id: string }) => e.child_id === auth.childId);
+      if (!already) {
+        const { count } = await supabase
+          .from("solves")
+          .select("id", { count: "exact", head: true })
+          .eq("child_id", auth.childId)
+          .eq("mode", mode);
+        const c = count ?? 0;
+        if (c < 10) {
+          qualify = { solveCount: c, needed: 10 - c };
+        }
+      }
+    }
+  }
+
+  return NextResponse.json({ entries: data ?? [], qualify });
 }

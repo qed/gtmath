@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MODES, PHASE1_MODES } from "@/lib/solver";
+import { MODES, MODE_ORDER } from "@/lib/solver";
 import "./leaderboard.css";
 
 interface SolveEntry {
@@ -14,8 +14,14 @@ interface SolveEntry {
 interface FastestEntry {
   child_id: string;
   child_name: string;
-  best_time_ms: number;
+  avg_time_ms: number;
+  solve_count: number;
   rank: number;
+}
+
+interface QualifyInfo {
+  solveCount: number;
+  needed: number;
 }
 
 type Entry = SolveEntry | FastestEntry;
@@ -41,14 +47,16 @@ export default function LeaderboardPage() {
   const [metric, setMetric] = useState<"solves" | "fastest">("solves");
   const [period, setPeriod] = useState<"all" | "today" | "week">("all");
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [qualify, setQualify] = useState<QualifyInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/leaderboard?mode=${mode}&metric=${metric}&period=${period}`)
+    fetch(`/api/leaderboard?mode=${mode}&metric=${metric}&period=${period}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         setEntries(data.entries ?? []);
+        setQualify(data.qualify ?? null);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -74,7 +82,7 @@ export default function LeaderboardPage() {
           <div className="lb-filter-group">
             <span className="eyebrow">Mode</span>
             <div className="lb-pills">
-              {PHASE1_MODES.map((m) => (
+              {MODE_ORDER.map((m) => (
                 <button
                   key={m}
                   onClick={() => setMode(m)}
@@ -138,7 +146,7 @@ export default function LeaderboardPage() {
                 <span className="lb-rank">#</span>
                 <span className="lb-name">Player</span>
                 <span className="lb-stat">
-                  {metric === "solves" ? "Solves" : "Best time"}
+                  {metric === "solves" ? "Solves" : "Avg top 10"}
                 </span>
               </div>
               {entries.map((entry) => (
@@ -155,10 +163,15 @@ export default function LeaderboardPage() {
                   <span className="lb-stat">
                     {metric === "solves"
                       ? (entry as SolveEntry).solve_count
-                      : fmtTime((entry as FastestEntry).best_time_ms)}
+                      : fmtTime((entry as FastestEntry).avg_time_ms)}
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+          {metric === "fastest" && qualify && (
+            <div className="lb-qualify">
+              Solve {qualify.needed} more {MODES[mode]?.label} hand{qualify.needed !== 1 ? "s" : ""} to qualify for the fastest leaderboard ({qualify.solveCount}/10)
             </div>
           )}
         </div>
