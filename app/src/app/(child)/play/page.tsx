@@ -44,7 +44,7 @@ function fmtTime(ms: number | null) {
 }
 
 export default function PlayPage() {
-  const [mode, setMode] = useState(4);
+  const [mode, setMode] = useState(2);
   const [phase, setPhase] = useState<GamePhase>("ready");
   const [hand, setHand] = useState<Deal | null>(null);
   const [tiles, setTiles] = useState<Tile[]>([]);
@@ -72,6 +72,7 @@ export default function PlayPage() {
         const data = await res.json();
         setUnlockedModes(data.unlockedModes);
         setModeCounts(data.modeCounts);
+        setMode((prev) => data.unlockedModes.includes(prev) ? prev : Math.max(...data.unlockedModes));
       }
     } catch {
       // offline — keep current state
