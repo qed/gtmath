@@ -80,6 +80,10 @@ The prototype uses localStorage. Production needs:
 
 See `artifacts/design_handoff_fastmath52/README.md` for the full backend API shape, database schema sketch, and open questions.
 
+## Documented Solutions
+
+`docs/solutions/` -- documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when implementing or debugging in documented areas.
+
 ## Skill routing
 
 When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
