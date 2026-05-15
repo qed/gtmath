@@ -1,0 +1,135 @@
+/* ============================================================
+   Alpha Toronto Parents Hub — Colors + Type Foundations
+   Echoes alpha.school's brand: deep royal blue as the hero
+   surface, pale sky-blue glyphs, warm natural imagery,
+   editorial-scale display type paired with neutral sans body.
+   ============================================================ */
+
+/* ---- Fonts (Google Fonts substitutes — see README for notes) ---- */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+
+:root {
+  /* ============== BRAND PALETTE ============== */
+  /* Primary — royal electric blue (the squircle/CTA color) */
+  --alpha-blue:        #0000FF;  /* primary  */
+  --alpha-blue-600:    #1212E6;  /* hover    */
+  --alpha-blue-700:    #0A0AB8;  /* pressed  */
+  --alpha-blue-ink:    #000066;  /* ink on sky backgrounds */
+
+  /* Secondary — pale sky (icon glyphs, accents on blue fields) */
+  --alpha-sky:         #CFE5FF;  /* icon fill on blue  */
+  --alpha-sky-soft:    #E6F0FF;  /* tinted surface     */
+  --alpha-sky-50:      #F4F8FF;  /* off-white wash     */
+
+  /* Warm highlight (used sparingly — for announcements, pins) */
+  --alpha-sun:         #FFD24A;  /* summer gold        */
+  --alpha-coral:       #FF7A59;  /* workshop coral     */
+
+  /* ============== NEUTRALS ============== */
+  --ink:               #0B0B10;  /* primary text       */
+  --ink-2:             #2A2A33;
+  --ink-3:             #4A4A55;
+  --ink-4:             #6B6B76;  /* muted text         */
+  --line:              #E4E4EA;
+  --line-2:            #EFEFF3;
+  --paper:             #FFFFFF;
+  --paper-2:           #FAFAF7;  /* warm off-white     */
+  --paper-3:           #F4F3EE;  /* editorial cream    */
+
+  /* ============== SEMANTIC ============== */
+  --fg-1:              var(--ink);
+  --fg-2:              var(--ink-3);
+  --fg-3:              var(--ink-4);
+  --fg-on-blue:        #FFFFFF;
+  --fg-on-blue-muted:  var(--alpha-sky);
+
+  --bg:                var(--paper);
+  --bg-muted:          var(--paper-2);
+  --bg-editorial:      var(--paper-3);
+  --bg-invert:         var(--alpha-blue);
+
+  --border:            var(--line);
+  --border-strong:     #D4D4DA;
+
+  --success:           #0E8A5F;
+  --warning:           #B85C00;
+  --danger:            #C41E3A;
+
+  /* ============== TYPE STACK ============== */
+  --font-display:      'Archivo', 'Inter Tight', system-ui, sans-serif;
+  --font-body:         'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-editorial:    'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-mono:         ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ============== RADII ============== */
+  --r-xs:  4px;
+  --r-sm:  8px;
+  --r-md:  14px;
+  --r-lg:  20px;
+  --r-xl:  28px;
+  --r-2xl: 40px;     /* squircle cards    */
+  --r-pill: 999px;
+
+  /* ============== SHADOWS ============== */
+  --shadow-sm:  0 1px 2px rgba(11,11,16,0.05);
+  --shadow-md:  0 4px 14px rgba(11,11,16,0.08);
+  --shadow-lg:  0 18px 40px rgba(11,11,16,0.10);
+  --shadow-blue: 0 12px 30px rgba(0,0,255,0.18);
+
+  /* ============== SPACING ============== */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+  --s-9: 96px; --s-10: 128px;
+
+  /* ============== MOTION ============== */
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-soft:     cubic-bezier(0.33, 1, 0.68, 1);
+  --dur-fast:   150ms;
+  --dur-base:   240ms;
+  --dur-slow:   480ms;
+}
+
+/* ====== BASE ELEMENTS (semantic defaults) ====== */
+html { color: var(--fg-1); background: var(--bg); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+body { margin: 0; font-size: 17px; line-height: 1.5; letter-spacing: -0.005em; }
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
+  font-family: var(--font-display);
+  color: var(--fg-1);
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  margin: 0;
+  text-wrap: balance;
+}
+h1, .h1 { font-size: clamp(44px, 6.4vw, 92px); font-weight: 800; letter-spacing: -0.035em; }
+h2, .h2 { font-size: clamp(36px, 4.4vw, 64px); font-weight: 800; letter-spacing: -0.03em; }
+h3, .h3 { font-size: clamp(26px, 2.6vw, 36px); font-weight: 700; }
+h4, .h4 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+.editorial {
+  font-family: var(--font-editorial);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+p, .body { font-size: 17px; line-height: 1.55; color: var(--fg-1); }
+.body-lg { font-size: 20px; line-height: 1.45; }
+.body-sm { font-size: 14px; line-height: 1.5; color: var(--fg-2); }
+.caption { font-size: 12px; letter-spacing: 0.02em; color: var(--fg-3); }
+
+a { color: var(--alpha-blue); text-decoration: none; }
+a:hover { color: var(--alpha-blue-600); }
+
+code, pre, .mono { font-family: var(--font-mono); font-size: 13px; }
+
+::selection { background: var(--alpha-blue); color: #fff; }
