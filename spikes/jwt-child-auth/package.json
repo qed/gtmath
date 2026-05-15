@@ -1,0 +1,19 @@
+{
+  "name": "jwt-child-auth-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "tsx test-jwt.ts",
+    "setup-db": "tsx setup-db.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "jsonwebtoken": "^9.0.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "typescript": "^5.7.0"
+  }
+}
