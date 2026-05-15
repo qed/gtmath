@@ -9,10 +9,12 @@ import {
   rankLabel,
   rationalLabel,
   MODES,
-  PHASE1_MODES,
 } from "@/lib/solver";
 import type { Rational, Card, Tile, HistoryEntry, GamePhase, OpSymbol, Deal } from "@/lib/types";
 import "./game.css";
+
+const ALL_MODES = [2, 3, 4, 5, 6, 7, 8, 9];
+const UNLOCK_THRESHOLD = 5;
 
 let nextTileId = 0;
 function tileId() {
@@ -57,9 +59,28 @@ export default function PlayPage() {
   const [speedBonus, setSpeedBonus] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [flashError, setFlashError] = useState(false);
+  const [unlockedModes, setUnlockedModes] = useState<number[]>([2]);
+  const [modeCounts, setModeCounts] = useState<Record<number, number>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const target = hand?.target ?? 0;
+
+  const fetchProgress = useCallback(async () => {
+    try {
+      const res = await fetch("/api/progress");
+      if (res.ok) {
+        const data = await res.json();
+        setUnlockedModes(data.unlockedModes);
+        setModeCounts(data.modeCounts);
+      }
+    } catch {
+      // offline — keep current state
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProgress();
+  }, [fetchProgress]);
 
   useEffect(() => {
     if (phase === "playing") {
@@ -198,6 +219,7 @@ export default function PlayPage() {
         setHbEarned(data.hbEarned);
         setNewBalance(data.newBalance);
         setSpeedBonus(data.speedBonus ?? 0);
+        fetchProgress();
       }
     } catch {
       // offline -- will queue later
@@ -323,19 +345,52 @@ export default function PlayPage() {
       <main className={`fm-main is-${phase}`}>
         {/* Mode pills */}
         <div className="fm-mode-pills">
-          {PHASE1_MODES.map((m) => (
-            <button
-              key={m}
-              onClick={() => {
-                setMode(m);
-                startReady();
-              }}
-              className={`fm-mode-pill ${m === mode ? "is-on" : ""}`}
-            >
-              {MODES[m].label}
-            </button>
-          ))}
+          {ALL_MODES.map((m) => {
+            const locked = !unlockedModes.includes(m);
+            return (
+              <button
+                key={m}
+                onClick={() => {
+                  if (locked) return;
+                  setMode(m);
+                  startReady();
+                }}
+                className={`fm-mode-pill ${m === mode ? "is-on" : ""} ${locked ? "is-locked" : ""}`}
+                disabled={locked}
+                title={locked ? `Solve ${UNLOCK_THRESHOLD} in ${MODES[m - 1]?.label} to unlock` : MODES[m].short}
+              >
+                {locked ? "🔒 " : ""}{MODES[m].label}
+              </button>
+            );
+          })}
         </div>
+
+        {/* Unlock progress pips */}
+        {(() => {
+          const nextLocked = ALL_MODES.find((m) => !unlockedModes.includes(m));
+          if (!nextLocked) return null;
+          const prevMode = nextLocked - 1;
+          const count = modeCounts[prevMode] || 0;
+          const qualified = count >= UNLOCK_THRESHOLD;
+          if (qualified) return null;
+          const need = UNLOCK_THRESHOLD - count;
+          return (
+            <div className="fm-qp">
+              <div className="fm-qp-pips" role="progressbar" aria-valuemin={0} aria-valuemax={UNLOCK_THRESHOLD} aria-valuenow={Math.min(count, UNLOCK_THRESHOLD)}>
+                {Array.from({ length: UNLOCK_THRESHOLD }, (_, i) => (
+                  <span key={i} className={`fm-qp-pip ${i < count ? "is-on" : ""}`} style={{ "--i": i } as React.CSSProperties} />
+                ))}
+              </div>
+              <div className="fm-qp-text">
+                {need === 1 ? (
+                  <span><strong>1 more</strong> {MODES[prevMode].label} solve to unlock {MODES[nextLocked].label}</span>
+                ) : (
+                  <span><strong>{need} more</strong> {MODES[prevMode].label} solves to unlock {MODES[nextLocked].label} · <span className="fm-qp-count">{count}/{UNLOCK_THRESHOLD}</span></span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Card tiles */}
         <div className={`fm-tiles count-${tileCount}`}>

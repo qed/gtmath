@@ -684,6 +684,93 @@
   box-shadow: var(--shadow-blue);
 }
 
+/* ── Locked mode pills ─────────────────────────────────────── */
+.fm-mode-pill.is-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--paper-2);
+  color: var(--ink-4);
+  box-shadow: none;
+  border: 1px dashed var(--border);
+}
+.fm-mode-pill.is-locked:hover {
+  background: var(--paper-2);
+  color: var(--ink-4);
+}
+
+/* ── Qualify progress (mode unlock pips) ──────────────────── */
+.fm-qp {
+  width: min(440px, 90vw);
+  margin-top: 4px;
+  padding: 12px 16px;
+  background: var(--alpha-sky-50);
+  border: 1px solid rgba(0,0,255,0.10);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.fm-qp.is-qualified {
+  background: linear-gradient(180deg, rgba(0,0,255,0.06), var(--alpha-sky-soft));
+  border-color: rgba(0,0,255,0.18);
+}
+.fm-qp-pips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.fm-qp-pip {
+  width: 22px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0,0,255,0.10);
+  transition: background 220ms var(--ease-soft), transform 220ms var(--ease-soft);
+}
+.fm-qp-pip.is-on {
+  background: var(--alpha-blue);
+  transform: scaleY(1.15);
+}
+.fm-qp-pip.is-on.is-done {
+  background: var(--alpha-blue);
+  animation: fm-qp-shine 1400ms var(--ease-soft) infinite;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+@keyframes fm-qp-shine {
+  0%, 100% { background: var(--alpha-blue); }
+  50% { background: var(--alpha-blue-600); }
+}
+.fm-qp-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.fm-qp.is-qualified .fm-qp-text {
+  color: var(--alpha-blue-ink);
+}
+.fm-qp-check {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  background: var(--alpha-blue);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.fm-qp-count {
+  color: var(--alpha-blue);
+  font-weight: 800;
+  margin-left: 4px;
+}
+
 /* ── Small-screen tweaks ───────────────────────────────────── */
 @media (max-width: 520px) {
   .fm-top {
