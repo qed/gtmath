@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**GTMath** is a math card game (expanded from the classic "Make 24") with 8 difficulty modes (2–9 cards), player accounts, per-mode leaderboards, and a 2-player heads-up duel (War) mode on a shared device. Built for classroom playtesting with ~50 students.
+**GTMath** is a math card game (expanded from the classic "Make 24") with 8 difficulty modes (2–9 cards), player accounts, Home Bucks economy, and COPPA-compliant child auth. Built as a deposit conversion tool for Alpha School, targeting classroom playtesting with ~50 students.
 
-The repository currently contains only the **design handoff prototype** under `artifacts/design_handoff_fastmath52/design/`. This is a working HTML + React-via-Babel prototype — it is the design reference, not production code. The production app has not yet been built.
+**Production app** lives in `app/` — Next.js 16 App Router + Supabase Postgres + Vercel. Phase 1 shipped 2026-05-15 with modes 2–5, parent dashboard, child PIN login, server-side solve verification, and HB economy. Live at https://gtmath-helix3.vercel.app.
+
+**Design reference prototype** lives in `artifacts/design_handoff_fastmath52/design/` — a working HTML + React-via-Babel prototype. This is the visual target for production; production should match it pixel-faithfully.
 
 ## Running the Prototype
 
@@ -71,14 +73,17 @@ Built on the **Alpha Toronto Parents Hub** design system. Key tokens in `tokens.
 - Standard easing: `cubic-bezier(0.2, 0.8, 0.2, 1)`, content reveal: `cubic-bezier(0.33, 1, 0.68, 1)`
 - The prototype is **high-fidelity** — colors, type, spacing, radii, shadows, animations are all final. Recreate pixel-faithfully.
 
-## Production Notes
+## Production Architecture
 
-The prototype uses localStorage. Production needs:
-1. A real backend for cross-device leaderboards (suggested REST shape in README.md).
-2. Server-side solve verification (re-evaluate expression with rational arithmetic).
-3. Optionally: WebSocket-based cross-device War mode.
+The production app in `app/` uses:
+- **Auth**: Supabase Auth (magic link) for parents, custom JWT via `jose` for children (COPPA — no Supabase Auth identity for kids)
+- **Database**: Supabase Postgres with RLS on all tables, `record_solve()` atomic function with advisory locks, `compound_daily()` via pg_cron
+- **Verification**: Server-side expression parser (`src/lib/verify.ts`) independent from the solver
+- **Solver**: Rational arithmetic engine (`src/lib/solver.ts`) — `{n, d}` fractions, solvability checker, smart dealer
 
-See `artifacts/design_handoff_fastmath52/README.md` for the full backend API shape, database schema sketch, and open questions.
+Key files: `src/lib/jwt.ts` (child JWT), `src/lib/verify.ts` (expression verification), `src/lib/solver.ts` (game engine), `src/proxy.ts` (Next.js 16 middleware proxy).
+
+See `docs/roadmap.md` for the full phase plan and `docs/phase-1-summary.md` for what shipped.
 
 ## Documented Solutions
 
