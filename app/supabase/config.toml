@@ -242,7 +242,7 @@ otp_expiry = 3600
 # content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.magic_link]
-subject = "Sign in to GTMath52"
+subject = "Your sign-in link for GTMath"
 content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize notification email template
