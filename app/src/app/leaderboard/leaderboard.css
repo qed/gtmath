@@ -1,0 +1,210 @@
+.lb-stage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background:
+    radial-gradient(80% 60% at 50% 0%, var(--alpha-sky-50) 0%, transparent 60%),
+    var(--bg);
+}
+
+.lb-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 18px 28px;
+  gap: 20px;
+}
+.lb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+.lb-title {
+  text-align: center;
+}
+.lb-nav {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lb-link {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--alpha-blue);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--alpha-blue);
+  transition: background 120ms var(--ease-standard);
+}
+.lb-link:hover {
+  background: var(--alpha-sky-soft);
+}
+
+.lb-main {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+/* Filters */
+.lb-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.lb-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lb-pills {
+  display: flex;
+  gap: 6px;
+}
+.lb-pill {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: background 120ms var(--ease-standard), color 120ms var(--ease-standard), box-shadow 120ms var(--ease-standard);
+  background: var(--paper);
+  color: var(--ink-3);
+  box-shadow: 0 0 0 1px var(--border) inset;
+}
+.lb-pill:hover {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+.lb-pill.is-on {
+  background: var(--alpha-blue);
+  color: #fff;
+  box-shadow: var(--shadow-blue);
+}
+
+/* Table */
+.lb-table-wrap {
+  background: var(--paper);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.lb-table {
+  display: flex;
+  flex-direction: column;
+}
+.lb-row {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line-2);
+  transition: background 120ms var(--ease-standard);
+}
+.lb-row:last-child {
+  border-bottom: 0;
+}
+.lb-row:not(.lb-header):hover {
+  background: var(--alpha-sky-50);
+}
+.lb-header {
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--border);
+}
+.lb-header .lb-rank,
+.lb-header .lb-name,
+.lb-header .lb-stat {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-4);
+}
+.lb-rank {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink-3);
+  text-align: center;
+}
+.lb-rank.is-top {
+  font-size: 20px;
+}
+.lb-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.lb-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--alpha-sky-soft);
+  color: var(--alpha-blue);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.lb-stat {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--alpha-blue);
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-empty {
+  padding: 48px 24px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink-4);
+}
+
+/* Small screens */
+@media (max-width: 520px) {
+  .lb-top {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  .lb-main {
+    padding: 0 16px 32px;
+  }
+  .lb-filters {
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .lb-row {
+    grid-template-columns: 40px 1fr auto;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+  .lb-stat {
+    font-size: 15px;
+  }
+}

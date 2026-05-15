@@ -300,6 +300,11 @@ export default function PlayPage() {
               <span>{fmtTime(endMs)}</span>
             )}
           </div>
+          <a href="/leaderboard" className="fm-dash-link" title="Leaderboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M21 5h-4v3a4 4 0 0 0 4-3z"/><path d="M3 5h4v3a4 4 0 0 1-4-3z"/>
+            </svg>
+          </a>
           <a href="/dashboard" className="fm-dash-link" title="Dashboard">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1" />
