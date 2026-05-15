@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import "../../auth.css";
 
 const DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"];
 
@@ -76,105 +77,110 @@ export default function PinPage() {
 
   if (!childId) {
     return (
-      <main className="flex-1 flex items-center justify-center p-[var(--s-5)]">
-        <div className="w-full max-w-[400px] text-center">
-          <h3 className="mb-[var(--s-5)]">Who's playing?</h3>
+      <div className="fm-login-overlay">
+        <div className="fm-login-bg" />
+        <div className="fm-login-card">
+          <div className="fm-login-mark">
+            <span className="fm-brand-mark-lg">⚡</span>
+          </div>
+          <h1 className="fm-login-title">
+            GTMath<span style={{ color: "var(--alpha-blue)" }}>52</span>
+          </h1>
+          <p className="fm-login-sub">Who&apos;s playing?</p>
+
           {loadingChildren ? (
-            <p className="text-ink-3">Loading...</p>
+            <p style={{ color: "var(--ink-3)" }}>Loading...</p>
           ) : children.length === 0 ? (
-            <div className="text-ink-3">
-              <p className="mb-[var(--s-4)]">
+            <div style={{ color: "var(--ink-3)" }}>
+              <p style={{ marginBottom: 16 }}>
                 No players found. Ask a parent to create your profile first.
               </p>
-              <a href="/login" className="text-alpha-blue font-medium hover:underline">
-                Parent sign-in
+              <a href="/login" className="fm-link">
+                Parent sign-in →
               </a>
             </div>
           ) : (
-            <div className="flex flex-col gap-[var(--s-3)]">
-              {children.map((child) => (
-                <button
-                  key={child.id}
-                  onClick={() => setChildId(child.id)}
-                  className="h-14 bg-alpha-sky-soft text-alpha-blue font-semibold text-lg
-                             hover:bg-alpha-sky active:scale-[0.98] transition-all cursor-pointer"
-                  style={{
-                    borderRadius: "var(--r-md)",
-                    fontFamily: "var(--font-display)",
-                  }}
-                >
-                  {child.name}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="fm-user-list">
+                {children.map((child) => (
+                  <button
+                    key={child.id}
+                    className="fm-user-row"
+                    onClick={() => setChildId(child.id)}
+                  >
+                    <span
+                      className="fm-avatar"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        fontSize: 16,
+                        background: "var(--alpha-blue)",
+                      }}
+                    >
+                      {child.name[0]?.toUpperCase()}
+                    </span>
+                    <span className="fm-user-row-name">{child.name}</span>
+                    <span className="fm-user-row-arrow">→</span>
+                  </button>
+                ))}
+              </div>
+              <a href="/login" className="fm-link" style={{ marginTop: 18 }}>
+                Parent sign-in
+              </a>
+            </>
           )}
-          <div className="mt-[var(--s-7)]">
-            <a href="/login" className="text-ink-4 text-sm hover:underline">
-              Parent sign-in
-            </a>
-          </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center p-[var(--s-5)]">
-      <div className="w-full max-w-[320px] text-center">
+    <div className="fm-login-overlay">
+      <div className="fm-login-bg" />
+      <div className="fm-login-card">
         <button
           onClick={() => {
             setChildId(null);
             setPin("");
             setError("");
           }}
-          className="text-ink-4 text-sm mb-[var(--s-5)] hover:underline cursor-pointer"
+          className="fm-link"
+          style={{ alignSelf: "flex-start", marginBottom: 8 }}
         >
           ← Back
         </button>
-        <h3 className="mb-[var(--s-5)]">Enter your PIN</h3>
 
-        {/* PIN dots */}
-        <div className="flex justify-center gap-[var(--s-3)] mb-[var(--s-5)]">
+        <div className="fm-login-mark">
+          <span className="fm-brand-mark-lg">⚡</span>
+        </div>
+        <h1 className="fm-login-title" style={{ fontSize: 28 }}>
+          Enter your PIN
+        </h1>
+
+        <div className="fm-pin-dots">
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="w-4 h-4 rounded-full transition-colors"
-              style={{
-                backgroundColor:
-                  i < pin.length ? "var(--alpha-blue)" : "var(--line)",
-                transitionDuration: "var(--dur-fast)",
-              }}
+              className={`fm-pin-dot ${i < pin.length ? "is-on" : ""}`}
             />
           ))}
         </div>
 
-        {error && (
-          <p className="text-danger text-sm mb-[var(--s-3)]">{error}</p>
-        )}
+        {error && <div className="fm-pin-error">{error}</div>}
 
-        {/* Keypad */}
-        <div
-          className="grid grid-cols-3 gap-[var(--s-3)] mx-auto"
-          style={{ maxWidth: "256px" }}
-        >
+        <div className="fm-pin-pad">
           {DIGITS.map((d, i) => (
             <button
               key={i}
               onClick={() => handleDigit(d)}
               disabled={loading || d === ""}
-              className="w-16 h-16 flex items-center justify-center text-2xl font-bold
-                         bg-paper-2 hover:bg-alpha-sky-soft active:scale-95
-                         disabled:opacity-0 transition-all cursor-pointer"
-              style={{
-                borderRadius: "var(--r-md)",
-                fontFamily: "var(--font-display)",
-              }}
+              className={`fm-pin-key ${d === "⌫" ? "is-backspace" : ""}`}
             >
               {d}
             </button>
           ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

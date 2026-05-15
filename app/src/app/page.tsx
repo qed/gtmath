@@ -1,42 +1,49 @@
 import Link from "next/link";
+import "./auth.css";
 
 export default function Home() {
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-[var(--s-5)] text-center">
-      <h1 className="mb-[var(--s-3)]">GTMath</h1>
-      <p
-        className="text-ink-3 text-xl mb-[var(--s-7)] max-w-[480px]"
-        style={{ fontFamily: "var(--font-editorial)", fontStyle: "italic" }}
-      >
-        Math meets strategy. Deal cards, combine numbers, hit the target.
-      </p>
+    <div className="fm-login-overlay">
+      <div className="fm-login-bg" />
+      <div className="fm-login-card">
+        <div className="fm-login-mark">
+          <span className="fm-brand-mark-lg">⚡</span>
+        </div>
+        <h1 className="fm-login-title">
+          GTMath<span style={{ color: "var(--alpha-blue)" }}>52</span>
+        </h1>
+        <p className="fm-login-sub">
+          Math meets strategy. Deal cards, combine numbers, hit the target.
+        </p>
 
-      <div className="flex flex-col gap-[var(--s-3)] w-full max-w-[320px]">
-        <Link
-          href="/pin"
-          className="flex items-center justify-center h-14 bg-alpha-blue text-white font-bold text-lg
-                     hover:bg-alpha-blue-600 active:bg-alpha-blue-700 transition-colors"
-          style={{
-            borderRadius: "var(--r-pill)",
-            fontFamily: "var(--font-display)",
-          }}
-        >
-          Play
-        </Link>
+        <div className="fm-login-form">
+          <Link
+            href="/pin"
+            className="fm-btn fm-btn-primary"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textDecoration: "none",
+            }}
+          >
+            Play
+          </Link>
 
-        <Link
-          href="/login"
-          className="flex items-center justify-center h-14 border-2 border-alpha-blue text-alpha-blue font-bold text-lg
-                     hover:bg-alpha-sky-soft transition-colors"
-          style={{
-            borderRadius: "var(--r-pill)",
-            fontFamily: "var(--font-display)",
-          }}
-        >
-          Parent sign-in
-        </Link>
+          <Link
+            href="/login"
+            className="fm-btn fm-btn-ghost"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textDecoration: "none",
+            }}
+          >
+            Parent sign-in
+          </Link>
+        </div>
       </div>
-
-    </main>
+    </div>
   );
 }

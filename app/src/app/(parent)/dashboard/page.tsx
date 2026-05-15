@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { MODES } from "@/lib/solver";
+import "../../auth.css";
 
 interface ChildData {
   id: string;
@@ -90,73 +92,46 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="flex-1 flex items-center justify-center">
-        <p className="text-ink-3">Loading dashboard...</p>
-      </main>
+      <div className="fm-login-overlay">
+        <div className="fm-login-bg" />
+        <p style={{ color: "var(--ink-3)", fontFamily: "var(--font-display)" }}>Loading dashboard...</p>
+      </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col" style={{ background: "var(--paper-2)" }}>
-      {/* Header */}
-      <header className="flex items-center justify-between px-[var(--s-5)] h-14 bg-paper border-b border-line">
-        <span
-          className="font-bold text-lg"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          GTMath
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--paper-2)" }}>
+      <header className="fm-dash-header">
+        <span className="fm-dash-brand">
+          GTMath<span style={{ color: "var(--alpha-blue)" }}>52</span>
         </span>
-        <div className="flex items-center gap-[var(--s-4)]">
-          <a href="/play" className="text-alpha-blue text-sm font-medium hover:underline">
-            Play
-          </a>
-          <button
-            onClick={handleSignOut}
-            className="text-ink-4 text-sm hover:text-ink-2 cursor-pointer"
-          >
-            Sign out
-          </button>
-        </div>
+        <nav className="fm-dash-nav">
+          <a href="/leaderboard">Leaderboard</a>
+          <a href="/play">Play</a>
+          <button onClick={handleSignOut}>Sign out</button>
+        </nav>
       </header>
 
-      <main className="flex-1 max-w-[1280px] mx-auto w-full px-[var(--s-5)] py-[var(--s-7)]">
-        <div className="flex items-center justify-between mb-[var(--s-7)]">
+      <main style={{ flex: 1, maxWidth: 1280, margin: "0 auto", width: "100%", padding: "48px 24px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 48 }}>
           <div>
             <h3>Parent Dashboard</h3>
-            <p
-              className="text-ink-3 mt-[var(--s-1)]"
-              style={{ fontFamily: "var(--font-editorial)", fontStyle: "italic" }}
-            >
-              Track your child's progress
+            <p style={{ fontFamily: "var(--font-editorial)", fontStyle: "italic", color: "var(--ink-3)", marginTop: 4 }}>
+              Track your child&apos;s progress
             </p>
           </div>
-          <button
-            onClick={() => setShowAddChild(true)}
-            className="px-[var(--s-5)] h-12 bg-alpha-blue text-white font-semibold
-                       hover:bg-alpha-blue-600 transition-colors cursor-pointer"
-            style={{
-              borderRadius: "var(--r-pill)",
-              fontFamily: "var(--font-display)",
-            }}
-          >
+          <button className="fm-btn fm-btn-primary" onClick={() => setShowAddChild(true)}>
             + Add child
           </button>
         </div>
 
-        {/* Add child form */}
         {showAddChild && (
-          <div
-            className="bg-paper p-[var(--s-5)] mb-[var(--s-5)]"
-            style={{
-              borderRadius: "var(--r-md)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            <h4 className="mb-[var(--s-4)]">New player profile</h4>
-            <form onSubmit={handleAddChild} className="flex flex-col gap-[var(--s-3)]">
+          <div className="fm-child-card" style={{ marginBottom: 24 }}>
+            <h4 style={{ marginBottom: 16 }}>New player profile</h4>
+            <form onSubmit={handleAddChild} className="fm-login-form">
               <div>
-                <label className="block text-sm font-medium text-ink-2 mb-[var(--s-1)]">
-                  Child's first name
+                <label style={{ display: "block", fontSize: 14, fontWeight: 500, color: "var(--ink-2)", marginBottom: 4 }}>
+                  Child&apos;s first name
                 </label>
                 <input
                   type="text"
@@ -164,13 +139,11 @@ export default function DashboardPage() {
                   onChange={(e) => setNewName(e.target.value)}
                   required
                   maxLength={50}
-                  className="w-full h-12 px-[var(--s-4)] border border-line text-[17px] outline-none
-                             focus:border-alpha-blue transition-colors"
-                  style={{ borderRadius: "var(--r-sm)" }}
+                  className="fm-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-2 mb-[var(--s-1)]">
+                <label style={{ display: "block", fontSize: 14, fontWeight: 500, color: "var(--ink-2)", marginBottom: 4 }}>
                   4-digit PIN (child uses this to log in)
                 </label>
                 <input
@@ -184,38 +157,22 @@ export default function DashboardPage() {
                   pattern="\d{4}"
                   inputMode="numeric"
                   maxLength={4}
-                  className="w-full h-12 px-[var(--s-4)] border border-line text-[17px] outline-none
-                             focus:border-alpha-blue transition-colors tracking-[0.3em]"
-                  style={{
-                    borderRadius: "var(--r-sm)",
-                    fontFamily: "var(--font-mono)",
-                  }}
+                  className="fm-input"
+                  style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.3em" }}
                 />
               </div>
               {addError && (
-                <p className="text-danger text-sm">{addError}</p>
+                <div className="fm-pin-error">{addError}</div>
               )}
-              <div className="flex gap-[var(--s-3)]">
-                <button
-                  type="submit"
-                  disabled={adding}
-                  className="px-[var(--s-5)] h-10 bg-alpha-blue text-white text-sm font-semibold
-                             hover:bg-alpha-blue-600 disabled:opacity-50 transition-colors cursor-pointer"
-                  style={{
-                    borderRadius: "var(--r-pill)",
-                    fontFamily: "var(--font-display)",
-                  }}
-                >
+              <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
+                <button type="submit" disabled={adding} className="fm-btn fm-btn-primary" style={{ padding: "12px 24px", fontSize: 14 }}>
                   {adding ? "Creating..." : "Create profile"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowAddChild(false);
-                    setAddError("");
-                  }}
-                  className="px-[var(--s-5)] h-10 text-ink-3 text-sm font-medium
-                             hover:text-ink transition-colors cursor-pointer"
+                  onClick={() => { setShowAddChild(false); setAddError(""); }}
+                  className="fm-link"
+                  style={{ fontSize: 14 }}
                 >
                   Cancel
                 </button>
@@ -224,61 +181,47 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Children list */}
         {children.length === 0 && !showAddChild ? (
-          <div
-            className="bg-paper p-[var(--s-7)] text-center"
-            style={{
-              borderRadius: "var(--r-lg)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            <h4 className="mb-[var(--s-2)]">Welcome to GTMath!</h4>
-            <p className="text-ink-3 mb-[var(--s-5)]">
-              Create a player profile for your child to get started. You'll set
-              their name and a 4-digit PIN they'll use to log in.
+          <div className="fm-child-card" style={{ textAlign: "center", padding: "48px 32px" }}>
+            <h4 style={{ marginBottom: 8 }}>Welcome to GTMath!</h4>
+            <p style={{ color: "var(--ink-3)", marginBottom: 24 }}>
+              Create a player profile for your child to get started. You&apos;ll set
+              their name and a 4-digit PIN they&apos;ll use to log in.
             </p>
-            <button
-              onClick={() => setShowAddChild(true)}
-              className="px-[var(--s-5)] h-12 bg-alpha-blue text-white font-semibold
-                         hover:bg-alpha-blue-600 transition-colors cursor-pointer"
-              style={{
-                borderRadius: "var(--r-pill)",
-                fontFamily: "var(--font-display)",
-              }}
-            >
+            <button className="fm-btn fm-btn-primary" onClick={() => setShowAddChild(true)}>
               + Add your first child
             </button>
           </div>
         ) : (
-          <div className="grid gap-[var(--s-5)] md:grid-cols-2">
+          <div style={{ display: "grid", gap: 24, gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))" }}>
             {children.map((child) => {
               const badge = getBadge(child.hbBalance);
               const next = getNextMilestone(child.hbBalance);
               return (
-                <div
-                  key={child.id}
-                  className="bg-paper p-[var(--s-5)]"
-                  style={{
-                    borderRadius: "var(--r-md)",
-                    boxShadow: "var(--shadow-sm)",
-                  }}
-                >
-                  {/* Child header */}
-                  <div className="flex items-center justify-between mb-[var(--s-4)]">
-                    <div className="flex items-center gap-[var(--s-3)]">
-                      <div
-                        className="w-10 h-10 bg-alpha-sky-soft text-alpha-blue flex items-center justify-center font-bold rounded-full"
-                        style={{ fontFamily: "var(--font-display)" }}
+                <div key={child.id} className="fm-child-card">
+                  <div className="fm-child-header">
+                    <div className="fm-child-identity">
+                      <span
+                        className="fm-avatar"
+                        style={{
+                          width: 40,
+                          height: 40,
+                          fontSize: 18,
+                          background: "var(--alpha-blue)",
+                        }}
                       >
                         {child.name[0]?.toUpperCase()}
-                      </div>
+                      </span>
                       <div>
-                        <span className="font-semibold">{child.name}</span>
+                        <span style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}>{child.name}</span>
                         {badge && (
                           <span
-                            className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full"
                             style={{
+                              marginLeft: 8,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              padding: "2px 8px",
+                              borderRadius: "var(--r-pill)",
                               background: badge.color + "22",
                               color: badge.color,
                             }}
@@ -288,77 +231,46 @@ export default function DashboardPage() {
                         )}
                       </div>
                     </div>
-                    <span className="text-xs text-ink-4 uppercase tracking-wider">
-                      {child.role}
-                    </span>
+                    <span className="eyebrow" style={{ fontSize: 11 }}>{child.role}</span>
                   </div>
 
-                  {/* Stats grid */}
-                  <div className="grid grid-cols-3 gap-[var(--s-3)] mb-[var(--s-4)]">
-                    <div className="text-center">
-                      <div
-                        className="text-2xl font-bold text-alpha-blue"
-                        style={{ fontFamily: "var(--font-display)" }}
-                      >
-                        {child.totalSolves}
-                      </div>
-                      <div className="text-xs text-ink-4">Solves</div>
+                  <div className="fm-stat-grid">
+                    <div className="fm-stat">
+                      <div className="fm-stat-value" style={{ color: "var(--alpha-blue)" }}>{child.totalSolves}</div>
+                      <div className="fm-stat-label">Solves</div>
                     </div>
-                    <div className="text-center">
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ fontFamily: "var(--font-display)" }}
-                      >
-                        {child.streakDays}
-                      </div>
-                      <div className="text-xs text-ink-4">Day streak</div>
+                    <div className="fm-stat">
+                      <div className="fm-stat-value">{child.streakDays}</div>
+                      <div className="fm-stat-label">Day streak</div>
                     </div>
-                    <div className="text-center">
-                      <div
-                        className="text-2xl font-bold text-success"
-                        style={{ fontFamily: "var(--font-display)" }}
-                      >
-                        {Number(child.hbBalance).toFixed(0)}
-                      </div>
-                      <div className="text-xs text-ink-4">Home Bucks</div>
+                    <div className="fm-stat">
+                      <div className="fm-stat-value" style={{ color: "var(--success)" }}>{Number(child.hbBalance).toFixed(0)}</div>
+                      <div className="fm-stat-label">Home Bucks</div>
                     </div>
                   </div>
 
-                  {/* Modes unlocked */}
-                  <div className="flex gap-[var(--s-2)] mb-[var(--s-3)]">
+                  <div className="fm-mode-tags">
                     {child.unlockedModes.map((m) => (
-                      <span
-                        key={m}
-                        className="px-2 py-0.5 text-xs font-semibold bg-alpha-sky-soft text-alpha-blue"
-                        style={{ borderRadius: "var(--r-pill)" }}
-                      >
-                        Mode {m}
+                      <span key={m} className="fm-mode-tag">
+                        {MODES[m]?.label ?? `Mode ${m}`}
                       </span>
                     ))}
                   </div>
 
-                  {/* Next milestone */}
                   {next && (
-                    <div className="text-xs text-ink-4">
-                      Next: {next.label} at {next.threshold} HB (
-                      {Math.max(0, next.threshold - Number(child.hbBalance)).toFixed(0)} to go)
+                    <div className="fm-next-milestone">
+                      Next: {next.label} at {next.threshold} HB ({Math.max(0, next.threshold - Number(child.hbBalance)).toFixed(0)} to go)
                     </div>
                   )}
 
-                  {/* Play button for this child */}
                   <button
+                    className="fm-play-as"
                     onClick={() => {
                       sessionStorage.setItem(
                         "pin_children",
                         JSON.stringify([{ id: child.id, name: child.name }])
                       );
                       router.push("/pin");
-                    }}
-                    className="mt-[var(--s-4)] w-full h-10 border border-alpha-blue text-alpha-blue text-sm font-semibold
-                               hover:bg-alpha-sky-soft transition-colors cursor-pointer"
-                    style={{
-                      borderRadius: "var(--r-pill)",
-                      fontFamily: "var(--font-display)",
                     }}
                   >
                     Play as {child.name}
