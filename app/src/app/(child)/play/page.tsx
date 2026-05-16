@@ -400,16 +400,21 @@ export default function PlayPage() {
             const isSel = selIdx !== -1;
             const isDim = phase === "playing" && selected.length === 2 && !isSel;
             const isFinal = (phase === "won" || phase === "bust") && tiles.length === 1;
+            const faceDown = phase === "ready";
 
             if (tile.kind === "card" && tile.card) {
               const red = isRed(tile.card.suit);
               return (
                 <button
                   key={tile.id}
-                  className={`fm-card fm-pc ${isSel ? "is-sel" : ""} ${isDim ? "is-dim" : ""}`}
+                  className={`fm-card fm-pc ${isSel ? "is-sel" : ""} ${isDim ? "is-dim" : ""} ${faceDown ? "is-back" : ""}`}
                   onClick={() => phase === "playing" && handleTileTap(tile.id)}
                   type="button"
                 >
+                  {faceDown ? (
+                    <span className="fm-pc-back">⚡</span>
+                  ) : (
+                    <>
                   {isSel && selected.length === 2 && (
                     <span className="fm-badge">{selIdx === 0 ? "①" : "②"}</span>
                   )}
@@ -422,6 +427,8 @@ export default function PlayPage() {
                     <span className="rank">{rankLabel(tile.card.rank)}</span>
                     <span className="suit">{tile.card.suit}</span>
                   </span>
+                    </>
+                  )}
                 </button>
               );
             }

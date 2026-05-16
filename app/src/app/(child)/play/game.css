@@ -226,6 +226,20 @@
   color: #C8102E;
 }
 
+/* Card back (face-down in ready state) */
+.fm-pc.is-back {
+  background: var(--alpha-blue);
+  cursor: default;
+}
+.fm-pc-back {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(28px, 5vw, 48px);
+  line-height: 1;
+}
+
 /* Result cards */
 .fm-rc {
   display: grid;
