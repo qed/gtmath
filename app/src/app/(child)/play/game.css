@@ -104,6 +104,26 @@
   position: relative;
 }
 
+/* ── Target banner ────────────────────────────────────────── */
+.fm-target-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: #FFD600;
+  color: #000;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  border-radius: var(--r-md);
+  letter-spacing: -0.01em;
+}
+.fm-target-banner strong {
+  font-size: 24px;
+  font-weight: 900;
+}
+
 /* ── Tile row ──────────────────────────────────────────────── */
 .fm-tiles {
   display: flex;
@@ -361,6 +381,10 @@
   color: var(--ink-4);
   opacity: 0.45;
 }
+.fm-pe-op {
+  color: var(--alpha-blue);
+  font-weight: 800;
+}
 .fm-pe-swap {
   appearance: none;
   border: 0;
@@ -442,6 +466,12 @@
 .fm-op:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+.fm-op.is-on {
+  background: var(--alpha-blue);
+  color: #fff;
+  box-shadow: var(--shadow-blue);
+  transform: scale(1.05);
 }
 
 /* Secondary actions row */

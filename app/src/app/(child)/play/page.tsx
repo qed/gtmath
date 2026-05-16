@@ -55,6 +55,7 @@ export default function PlayPage() {
   const [hand, setHand] = useState<Deal | null>(null);
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [pendingOp, setPendingOp] = useState<OpSymbol | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [expression, setExpression] = useState("");
   const [startTime, setStartTime] = useState(0);
@@ -123,6 +124,7 @@ export default function PlayPage() {
     const t = hand.cards.map(cardToTile);
     setTiles(t);
     setSelected([]);
+    setPendingOp(null);
     setHistory([]);
     setExpression("");
     setStartTime(Date.now());
@@ -140,6 +142,7 @@ export default function PlayPage() {
     setHand(h);
     setTiles([]);
     setSelected([]);
+    setPendingOp(null);
     setHistory([]);
     setExpression("");
     setStartTime(0);
@@ -153,30 +156,30 @@ export default function PlayPage() {
   const handleTileTap = useCallback(
     (id: string) => {
       if (phase !== "playing") return;
-      setSelected((prev) => {
-        if (prev.includes(id)) return prev.filter((s) => s !== id);
-        if (prev.length >= 2) return [prev[0], id];
-        return [...prev, id];
-      });
-    },
-    [phase]
-  );
 
-  const swapOperands = useCallback(() => {
-    setSelected((prev) => (prev.length === 2 ? [prev[1], prev[0]] : prev));
-  }, []);
+      if (selected.length === 0) {
+        setSelected([id]);
+        return;
+      }
 
-  const handleOp = useCallback(
-    (op: OpSymbol) => {
-      if (phase !== "playing" || selected.length !== 2) return;
+      if (selected[0] === id) {
+        setSelected([]);
+        setPendingOp(null);
+        return;
+      }
+
+      if (!pendingOp) {
+        setSelected([id]);
+        return;
+      }
 
       const aIdx = tiles.findIndex((t) => t.id === selected[0]);
-      const bIdx = tiles.findIndex((t) => t.id === selected[1]);
+      const bIdx = tiles.findIndex((t) => t.id === id);
       if (aIdx === -1 || bIdx === -1) return;
 
       const a = tiles[aIdx];
       const b = tiles[bIdx];
-      const result = apply(op, a.value, b.value);
+      const result = apply(pendingOp, a.value, b.value);
 
       if (!result) {
         setFlashError(true);
@@ -186,12 +189,12 @@ export default function PlayPage() {
 
       setHistory((prev) => [
         ...prev,
-        { tiles: [...tiles], selected: [...selected], expression },
+        { tiles: [...tiles], selected: [...selected], expression, pendingOp },
       ]);
 
       const aExpr = a.kind === "card" ? a.expr : `(${a.expr})`;
       const bExpr = b.kind === "card" ? b.expr : `(${b.expr})`;
-      const newExpr = `${aExpr} ${op} ${bExpr}`;
+      const newExpr = `${aExpr} ${pendingOp} ${bExpr}`;
 
       const newTile: Tile = {
         id: tileId(),
@@ -206,6 +209,7 @@ export default function PlayPage() {
 
       setTiles(newTiles);
       setSelected([]);
+      setPendingOp(null);
       setExpression(newExpr);
 
       if (newTiles.length === 1) {
@@ -219,7 +223,16 @@ export default function PlayPage() {
         }
       }
     },
-    [phase, selected, tiles, expression, target, startTime]
+    [phase, selected, pendingOp, tiles, expression, target, startTime]
+  );
+
+
+  const handleOp = useCallback(
+    (op: OpSymbol) => {
+      if (phase !== "playing" || selected.length !== 1) return;
+      setPendingOp(op);
+    },
+    [phase, selected]
   );
 
   async function submitSolve(expr: string) {
@@ -257,6 +270,10 @@ export default function PlayPage() {
 
   const undo = useCallback(() => {
     if (phase === "won" || phase === "bust") return;
+    if (pendingOp) {
+      setPendingOp(null);
+      return;
+    }
     if (selected.length > 0) {
       setSelected([]);
       return;
@@ -264,9 +281,10 @@ export default function PlayPage() {
     if (history.length === 0) return;
     const last = history[history.length - 1];
     setTiles(last.tiles);
-    setSelected([]);
+    setSelected(last.selected ?? []);
+    setPendingOp(last.pendingOp ?? null);
     setHistory((prev) => prev.slice(0, -1));
-  }, [phase, history, selected]);
+  }, [phase, history, selected, pendingOp]);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -298,13 +316,12 @@ export default function PlayPage() {
         handleOp(opMap[e.key]);
         return;
       }
-      if (e.key === "s" || e.key === "S") { e.preventDefault(); swapOperands(); }
       if (e.key === "u" || e.key === "U" || e.key === "Backspace") { e.preventDefault(); undo(); }
       if (e.key === "Escape") { e.preventDefault(); setSelected([]); }
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [phase, tiles, handleTileTap, handleOp, swapOperands, undo]);
+  }, [phase, tiles, handleTileTap, handleOp, undo]);
 
   async function handleTutorialComplete() {
     setTutorialSeen(true);
@@ -320,7 +337,6 @@ export default function PlayPage() {
   const tileExprFor = (t: Tile | undefined) =>
     t ? (t.kind === "card" ? t.expr : `(${t.expr})`) : null;
   const aTile = selected[0] ? tileById(selected[0]) : undefined;
-  const bTile = selected[1] ? tileById(selected[1]) : undefined;
 
   // Preview tiles for ready state
   const previewCards = hand
@@ -366,23 +382,17 @@ export default function PlayPage() {
           <span>GTMath<span className="fm-brand-52">52</span></span>
         </div>
 
-        <div>
-          <span className="fm-target">
-            <span className="eyebrow">Make</span>
-            <span className="fm-target-num">{target || "—"}</span>
-          </span>
+        <div className="fm-timer" aria-live="polite">
+          {phase === "ready" ? (
+            <span className="fm-timer-idle">Ready</span>
+          ) : phase === "playing" ? (
+            <span>{fmtTime(elapsed)}</span>
+          ) : (
+            <span>{fmtTime(endMs)}</span>
+          )}
         </div>
 
         <div className="fm-top-right">
-          <div className="fm-timer" aria-live="polite">
-            {phase === "ready" ? (
-              <span className="fm-timer-idle">Ready</span>
-            ) : phase === "playing" ? (
-              <span>{fmtTime(elapsed)}</span>
-            ) : (
-              <span>{fmtTime(endMs)}</span>
-            )}
-          </div>
           <a href="/leaderboard" className="fm-dash-link" title="Leaderboard">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M21 5h-4v3a4 4 0 0 0 4-3z"/><path d="M3 5h4v3a4 4 0 0 1-4-3z"/>
@@ -448,6 +458,11 @@ export default function PlayPage() {
           );
         })()}
 
+        {/* Target banner */}
+        <div className="fm-target-banner">
+          Make <strong>{target || "—"}</strong>
+        </div>
+
         {/* Card tiles */}
         <div className={`fm-tiles count-${tileCount}`}>
           {displayTiles.map((tile) => {
@@ -511,22 +526,20 @@ export default function PlayPage() {
         {phase === "playing" && (
           <div className="fm-preview">
             {selected.length === 0 && (
-              <span className="fm-preview-hint">Tap two cards</span>
+              <span className="fm-preview-hint">Tap a card</span>
             )}
-            {selected.length === 1 && (
+            {selected.length === 1 && !pendingOp && (
               <span className="fm-preview-expr">
                 <span className="fm-pe-tok">{tileExprFor(aTile)}</span>
-                <span className="fm-pe-tok fm-pe-empty">?</span>
+                <span className="fm-pe-tok fm-pe-empty">op?</span>
                 <span className="fm-pe-tok fm-pe-empty">?</span>
               </span>
             )}
-            {selected.length === 2 && (
+            {selected.length === 1 && pendingOp && (
               <span className="fm-preview-expr is-ready">
                 <span className="fm-pe-tok">{tileExprFor(aTile)}</span>
-                <button className="fm-pe-swap" onClick={swapOperands} title="Swap operands (S)" aria-label="Swap operands" type="button">
-                  ⇆
-                </button>
-                <span className="fm-pe-tok">{tileExprFor(bTile)}</span>
+                <span className="fm-pe-tok fm-pe-op">{pendingOp}</span>
+                <span className="fm-pe-tok fm-pe-empty">?</span>
               </span>
             )}
           </div>
@@ -545,12 +558,12 @@ export default function PlayPage() {
         {/* Playing phase: operators */}
         {phase === "playing" && (
           <div className="fm-actions playing">
-            <div className={`fm-ops ${selected.length === 2 ? "is-ready" : ""}`}>
+            <div className={`fm-ops ${selected.length === 1 ? "is-ready" : ""}`}>
               {(["+", "−", "×", "÷"] as OpSymbol[]).map((op) => (
                 <button
                   key={op}
-                  className="fm-op"
-                  disabled={selected.length !== 2}
+                  className={`fm-op ${pendingOp === op ? "is-on" : ""}`}
+                  disabled={selected.length !== 1}
                   onClick={() => handleOp(op)}
                   type="button"
                   aria-label={op}
