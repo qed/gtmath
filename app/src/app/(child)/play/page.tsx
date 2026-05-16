@@ -85,6 +85,8 @@ export default function PlayPage() {
 
   useEffect(() => {
     fetchProgress();
+    const h = deal({ mode: 2, onlySolvable: true });
+    setHand(h);
   }, [fetchProgress]);
 
   useEffect(() => {
