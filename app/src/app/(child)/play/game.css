@@ -366,8 +366,8 @@
   border: 0;
   cursor: pointer;
   background: transparent;
-  width: 26px;
-  height: 26px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -698,6 +698,7 @@
   display: flex;
   gap: 6px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 .fm-mode-pill {
   appearance: none;
@@ -813,6 +814,9 @@
 
 /* ── Small-screen tweaks ───────────────────────────────────── */
 @media (max-width: 520px) {
+  .fm-stage {
+    overflow-x: hidden;
+  }
   .fm-top {
     padding: 14px 16px;
     gap: 10px;
@@ -824,20 +828,24 @@
     font-size: 15px;
   }
   .fm-target .eyebrow {
-    font-size: 9.5px;
+    font-size: 11px;
   }
   .fm-timer {
     font-size: 18px;
+  }
+  .fm-signout-label {
+    display: none;
   }
   .fm-main {
     padding: 8px 12px;
     gap: 18px;
   }
-  .fm-foot {
-    padding: 8px 14px 14px;
+  .fm-mode-pill {
+    padding: 10px 12px;
+    font-size: 12px;
   }
-  .fm-foot .caption {
-    font-size: 10.5px;
+  .fm-foot {
+    display: none;
   }
 }
 @media (max-width: 360px) {

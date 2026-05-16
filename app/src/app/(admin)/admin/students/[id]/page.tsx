@@ -153,7 +153,7 @@ export default function StudentDrilldown() {
                 onClick={() => setConfirmAction("reset_hb")}
                 disabled={!!actionPending}
                 className="fm-btn fm-btn-ghost"
-                style={{ padding: "8px 14px", fontSize: 13 }}
+                style={{ padding: "12px 16px", fontSize: 14, minHeight: 44 }}
               >
                 Reset HB
               </button>
@@ -180,7 +180,7 @@ export default function StudentDrilldown() {
                   onClick={() => setConfirmAction("reactivate")}
                   disabled={!!actionPending}
                   className="fm-btn fm-btn-ghost"
-                  style={{ padding: "8px 14px", fontSize: 13 }}
+                  style={{ padding: "12px 16px", fontSize: 14, minHeight: 44 }}
                 >
                   Reactivate
                 </button>
@@ -204,7 +204,7 @@ export default function StudentDrilldown() {
                 onClick={() => setConfirmAction("deactivate")}
                 disabled={!!actionPending}
                 className="fm-btn fm-btn-ghost"
-                style={{ padding: "8px 14px", fontSize: 13 }}
+                style={{ padding: "12px 16px", fontSize: 14, minHeight: 44 }}
               >
                 Deactivate
               </button>
@@ -233,28 +233,30 @@ export default function StudentDrilldown() {
           {solves.length === 0 ? (
             <p style={{ color: "var(--ink-3)" }}>No solves yet.</p>
           ) : (
-            <table className="fm-admin-table">
-              <thead>
-                <tr>
-                  <th>Mode</th>
-                  <th>Target</th>
-                  <th>Time</th>
-                  <th>HB</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {solves.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.mode}</td>
-                    <td>{s.target}</td>
-                    <td>{fmtTime(s.time_ms)}</td>
-                    <td>{fmtHB(s.hb_earned)}</td>
-                    <td>{new Date(s.created_at).toLocaleDateString()}</td>
+            <div className="fm-admin-table-wrap">
+              <table className="fm-admin-table">
+                <thead>
+                  <tr>
+                    <th>Mode</th>
+                    <th>Target</th>
+                    <th>Time</th>
+                    <th>HB</th>
+                    <th>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {solves.map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.mode}</td>
+                      <td>{s.target}</td>
+                      <td>{fmtTime(s.time_ms)}</td>
+                      <td>{fmtHB(s.hb_earned)}</td>
+                      <td>{new Date(s.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
 
@@ -264,26 +266,28 @@ export default function StudentDrilldown() {
           {transactions.length === 0 ? (
             <p style={{ color: "var(--ink-3)" }}>No transactions.</p>
           ) : (
-            <table className="fm-admin-table">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Balance</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((t) => (
-                  <tr key={t.id}>
-                    <td>{t.type}</td>
-                    <td>{t.amount >= 0 ? "+" : ""}{fmtHB(t.amount)}</td>
-                    <td>{fmtHB(t.balance_after)}</td>
-                    <td>{new Date(t.created_at).toLocaleDateString()}</td>
+            <div className="fm-admin-table-wrap">
+              <table className="fm-admin-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                    <th>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {transactions.map((t) => (
+                    <tr key={t.id}>
+                      <td>{t.type}</td>
+                      <td>{t.amount >= 0 ? "+" : ""}{fmtHB(t.amount)}</td>
+                      <td>{fmtHB(t.balance_after)}</td>
+                      <td>{new Date(t.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       </div>

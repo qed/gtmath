@@ -520,11 +520,12 @@
   appearance: none;
   border: 0;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 10px 16px;
+  min-height: 44px;
   border-radius: var(--r-sm);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   background: var(--danger);
   color: #fff;
 }
@@ -536,11 +537,12 @@
   appearance: none;
   border: 0;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 10px 16px;
+  min-height: 44px;
   border-radius: var(--r-sm);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   background: var(--paper-2);
   color: var(--ink-3);
 }
@@ -565,11 +567,32 @@
   color: var(--ink);
 }
 @media (max-width: 640px) {
+  .fm-dash-header {
+    padding: 0 16px;
+  }
+  .fm-admin-content {
+    padding: 16px;
+  }
   .fm-admin-col-email {
     display: none;
   }
   .fm-admin-actions-bar {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .fm-admin-confirm {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .fm-admin-actions {
+    width: 100%;
+  }
+  .fm-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 400px) {
+  .fm-login-card {
+    padding: 32px 20px 24px;
   }
 }
