@@ -21,6 +21,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
 
+  if (!child.pin_hash) {
+    return NextResponse.json({ error: "Use Google sign-in" }, { status: 401 });
+  }
+
   const valid = await bcrypt.compare(pin, child.pin_hash);
   if (!valid) {
     return NextResponse.json({ error: "Wrong PIN" }, { status: 401 });
