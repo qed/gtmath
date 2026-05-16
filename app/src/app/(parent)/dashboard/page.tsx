@@ -244,7 +244,7 @@ export default function DashboardPage() {
                       <div className="fm-stat-label">Day streak</div>
                     </div>
                     <div className="fm-stat">
-                      <div className="fm-stat-value" style={{ color: "var(--success)" }}>{Number(child.hbBalance).toFixed(0)}</div>
+                      <div className="fm-stat-value" style={{ color: "var(--success)" }}>{Number.isInteger(Number(child.hbBalance)) ? String(Number(child.hbBalance)) : Number(child.hbBalance).toFixed(1)}</div>
                       <div className="fm-stat-label">Home Bucks</div>
                     </div>
                   </div>
@@ -259,7 +259,7 @@ export default function DashboardPage() {
 
                   {next && (
                     <div className="fm-next-milestone">
-                      Next: {next.label} at {next.threshold} HB ({Math.max(0, next.threshold - Number(child.hbBalance)).toFixed(0)} to go)
+                      Next: {next.label} at {next.threshold} HB ({Math.max(0, Math.ceil(next.threshold - Number(child.hbBalance)))} to go)
                     </div>
                   )}
 

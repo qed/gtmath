@@ -43,6 +43,10 @@ function fmtTime(ms: number | null) {
   return `${String(m).padStart(2, "0")}:${sec.toFixed(1).padStart(4, "0")}`;
 }
 
+function fmtHB(v: number) {
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+}
+
 export default function PlayPage() {
   const [mode, setMode] = useState(2);
   const [phase, setPhase] = useState<GamePhase>("ready");
@@ -526,9 +530,9 @@ export default function PlayPage() {
             <div className="fm-result-expr">{tiles[0]?.expr}</div>
             {hbEarned != null && (
               <div className="fm-hb-earned">
-                +{hbEarned} HB
-                {speedBonus > 0 && <span className="fm-speed-tag">⚡ New PB! +{speedBonus} HB</span>}
-                {newBalance != null && <span> · Balance: {newBalance} HB</span>}
+                +{fmtHB(hbEarned)} HB
+                {speedBonus > 0 && <span className="fm-speed-tag">⚡ New PB! +{fmtHB(speedBonus)} HB</span>}
+                {newBalance != null && <span> · Balance: {fmtHB(newBalance)} HB</span>}
               </div>
             )}
             {submitting && (
