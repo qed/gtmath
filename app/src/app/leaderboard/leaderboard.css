@@ -1,3 +1,20 @@
+/* Brand mark (shared with game.css) */
+.fm-brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: var(--alpha-blue);
+  color: var(--alpha-sky);
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1;
+  box-shadow: var(--shadow-blue);
+}
+.fm-brand-52 {
+  color: var(--alpha-blue);
+}
+
 .lb-stage {
   min-height: 100vh;
   display: grid;

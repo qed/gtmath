@@ -15,10 +15,10 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServiceClient();
 
-  const { data: solves } = await supabase
-    .from("solves")
-    .select("mode")
-    .eq("child_id", auth.childId);
+  const [{ data: solves }, { data: child }] = await Promise.all([
+    supabase.from("solves").select("mode").eq("child_id", auth.childId),
+    supabase.from("children").select("tutorial_seen").eq("id", auth.childId).single(),
+  ]);
 
   const modeCounts: Record<number, number> = {};
   for (const s of solves || []) {
@@ -33,5 +33,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ modeCounts, unlockedModes, unlockThreshold });
+  return NextResponse.json({
+    modeCounts,
+    unlockedModes,
+    unlockThreshold,
+    tutorialSeen: child?.tutorial_seen ?? false,
+  });
 }

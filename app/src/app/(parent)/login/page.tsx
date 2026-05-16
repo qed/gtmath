@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import "../../auth.css";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -31,75 +32,85 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center p-[var(--s-5)]">
-      <div
-        className="w-full max-w-[400px] p-[var(--s-7)] text-center"
-        style={{ borderRadius: "var(--r-lg)" }}
-      >
-        <h2 className="mb-[var(--s-2)]">GTMath</h2>
-        <p
-          className="text-ink-3 mb-[var(--s-7)]"
-          style={{ fontFamily: "var(--font-editorial)", fontStyle: "italic", fontSize: "20px" }}
-        >
-          Parent sign-in
-        </p>
+    <div className="fm-login-overlay">
+      <div className="fm-login-bg" />
+      <div className="fm-login-card">
+        <div className="fm-login-mark">
+          <span className="fm-brand-mark-lg">⚡</span>
+        </div>
+        <h1 className="fm-login-title">
+          GTMath<span style={{ color: "var(--alpha-blue)" }}>52</span>
+        </h1>
+        <p className="fm-login-sub">Parent sign-in</p>
 
         {sent ? (
           <div
-            className="bg-alpha-sky-soft p-[var(--s-5)] text-center"
-            style={{ borderRadius: "var(--r-md)" }}
+            style={{
+              width: "100%",
+              padding: "20px",
+              background: "var(--alpha-sky-soft)",
+              borderRadius: "var(--r-md)",
+              textAlign: "center",
+            }}
           >
-            <p className="font-semibold text-alpha-blue mb-[var(--s-2)]">
+            <p
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                color: "var(--alpha-blue)",
+                marginBottom: 8,
+              }}
+            >
               Check your email
             </p>
-            <p className="text-ink-3 text-sm">
+            <p style={{ color: "var(--ink-3)", fontSize: 14 }}>
               We sent a magic link to <strong>{email}</strong>. Click it to sign
               in.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
-            <label className="block text-left text-sm font-medium text-ink-2 mb-[var(--s-1)]">
-              Email address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="parent@example.com"
-              className="w-full h-12 px-[var(--s-4)] border border-line text-[17px] outline-none
-                         focus:border-alpha-blue transition-colors"
-              style={{ borderRadius: "var(--r-sm)" }}
-            />
-            {error && (
-              <p className="text-danger text-sm mt-[var(--s-2)]">{error}</p>
-            )}
+          <form onSubmit={handleSubmit} className="fm-login-form">
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "var(--ink-2)",
+                  marginBottom: 4,
+                }}
+              >
+                Email address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="parent@example.com"
+                className="fm-input"
+              />
+            </div>
+            {error && <div className="fm-pin-error">{error}</div>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 mt-[var(--s-4)] bg-alpha-blue text-white font-semibold
-                         hover:bg-alpha-blue-600 active:bg-alpha-blue-700
-                         disabled:opacity-50 transition-colors cursor-pointer"
-              style={{
-                borderRadius: "var(--r-pill)",
-                fontFamily: "var(--font-display)",
-              }}
+              className="fm-btn fm-btn-primary"
+              style={{ justifyContent: "center" }}
             >
               {loading ? "Sending..." : "Send magic link"}
             </button>
           </form>
         )}
 
-        <div className="mt-[var(--s-7)] pt-[var(--s-5)] border-t border-line">
-          <a
-            href="/pin"
-            className="text-alpha-blue font-medium hover:underline text-sm"
-          >
-            Child? Enter your PIN instead
-          </a>
-        </div>
+        <a
+          href="/pin"
+          className="fm-link"
+          style={{ marginTop: 18 }}
+        >
+          Child? Enter your PIN instead →
+        </a>
       </div>
-    </main>
+    </div>
   );
 }

@@ -11,17 +11,25 @@ Live at: https://gtmath-helix3.vercel.app
 - [ ] Switch between "Most solved" and "Fastest" metrics
 - [ ] Switch between "All time", "This week", and "Today" period filters
 - [ ] Verify top 3 show medal emoji (gold, silver, bronze)
-- [ ] Verify "Fastest" metric shows times formatted as MM:SS.s
+- [ ] Verify "Fastest" metric shows avg top-10 times formatted as MM:SS.s
+- [ ] Verify "Fastest" requires 10+ solves to qualify — if logged in with <10, see qualify message ("Solve N more … to qualify")
 - [ ] Verify leaderboard is accessible without being logged in (no auth gate)
 - [ ] Verify leaderboard updates after solving a hand (go solve, come back, see your entry)
 
-## 2. Speed Bonus
+## 2. Speed / PB Bonus
 
-- [ ] Solve a hand quickly (mode 2 Quick is easiest — median is 5 seconds, threshold is 20%, so solve under 1 second)
-- [ ] Verify the won panel shows a gold "⚡ Speed bonus!" tag
-- [ ] Verify HB earned includes the speed bonus (+50 HB extra)
-- [ ] Solve a hand slowly and verify NO speed bonus tag appears
-- [ ] Check parent dashboard — HB balance should reflect speed bonus earnings
+The speed bonus now triggers when your average top-10 fastest time improves (not a flat threshold). Base HB = mode × 0.5. PB bonus = seconds improved × base, minimum = base. Decimal HB is allowed.
+
+**Setup: need 10+ solves in a mode before PB bonus can activate (avg top-10 requires 10 data points).**
+
+- [ ] Solve 10+ hands in Quick mode to build a top-10 baseline
+- [ ] Solve hand #11+ faster than your previous worst in the top 10 — if it lowers your avg, verify the won panel shows "⚡ New PB! +X.X HB"
+- [ ] Verify total HB earned = base (1.0 for Quick) + PB bonus
+- [ ] Verify the PB bonus amount is at least the base HB (minimum floor)
+- [ ] Solve a hand that does NOT improve your avg top-10 — verify NO PB tag appears, only base HB earned
+- [ ] Check parent dashboard — HB balance should reflect decimal earnings (e.g., 12.5 HB)
+- [ ] Verify HB displays use 1 decimal place for non-integer values (not raw floats like 1.4999...)
+- [ ] With fewer than 10 solves in a mode, verify no PB bonus is possible (only base HB earned)
 
 ## 3. Daily Leaderboard Filter
 
@@ -52,8 +60,8 @@ Live at: https://gtmath-helix3.vercel.app
 - [ ] Unlock and play **Wild (mode 9)** — 9 cards, random target 1000–9999
 - [ ] Verify cards scale down appropriately for 7/8/9 card hands (responsive sizing)
 - [ ] Verify solves in modes 6–9 are recorded and appear on the leaderboard
-- [ ] Verify HB is earned (base = mode × 5, so mode 9 = 45 HB base)
-- [ ] Verify speed bonus works for modes 6–9 (median times: 40s/60s/90s/120s)
+- [ ] Verify HB is earned (base = mode × 0.5, so mode 6 = 3.0, mode 7 = 3.5, mode 8 = 4.0, mode 9 = 4.5)
+- [ ] Verify PB bonus works for modes 6–9 after building 10+ solves in that mode
 
 ## 6. Landing Page Polish
 
@@ -92,7 +100,7 @@ Live at: https://gtmath-helix3.vercel.app
 - [ ] Full flow: Landing → PIN → Play → Solve → check Leaderboard → check Dashboard
 - [ ] Solve 5 hands in Quick mode → verify Speed mode unlocks
 - [ ] Continue unlocking through modes and verify progress pips update correctly
-- [ ] Verify HB balance on dashboard matches expected earnings (base + streak + speed bonus)
+- [ ] Verify HB balance on dashboard matches expected earnings (base per solve + any PB bonuses)
 - [ ] Verify leaderboard "Today" filter shows only today's activity after a fresh solve
 
 ## 10. Edge Cases

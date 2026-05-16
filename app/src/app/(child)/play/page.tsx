@@ -11,6 +11,7 @@ import {
   MODES,
 } from "@/lib/solver";
 import type { Rational, Card, Tile, HistoryEntry, GamePhase, OpSymbol, Deal } from "@/lib/types";
+import Tutorial from "./tutorial";
 import "./game.css";
 
 const ALL_MODES = [2, 3, 4, 5, 6, 7, 8, 9];
@@ -65,6 +66,7 @@ export default function PlayPage() {
   const [flashError, setFlashError] = useState(false);
   const [unlockedModes, setUnlockedModes] = useState<number[]>([2]);
   const [modeCounts, setModeCounts] = useState<Record<number, number>>({});
+  const [tutorialSeen, setTutorialSeen] = useState<boolean | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const target = hand?.target ?? 0;
@@ -76,6 +78,7 @@ export default function PlayPage() {
         const data = await res.json();
         setUnlockedModes(data.unlockedModes);
         setModeCounts(data.modeCounts);
+        setTutorialSeen(data.tutorialSeen ?? true);
         setMode((prev) => data.unlockedModes.includes(prev) ? prev : Math.max(...data.unlockedModes));
       }
     } catch {
@@ -285,6 +288,15 @@ export default function PlayPage() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [phase, tiles, handleTileTap, handleOp, swapOperands, undo]);
 
+  async function handleTutorialComplete() {
+    setTutorialSeen(true);
+    try {
+      await fetch("/api/tutorial", { method: "PATCH" });
+    } catch {
+      // offline — tutorial will re-show next time, which is fine
+    }
+  }
+
   // Derived: tile lookup helpers for preview
   const tileById = (id: string) => tiles.find((t) => t.id === id);
   const tileExprFor = (t: Tile | undefined) =>
@@ -305,6 +317,14 @@ export default function PlayPage() {
 
   const displayTiles = phase === "ready" ? previewCards : tiles;
   const tileCount = displayTiles.length || (hand ? MODES[hand.mode]?.cards : MODES[mode]?.cards) || 4;
+
+  if (tutorialSeen === null) {
+    return <div className="fm-stage" />;
+  }
+
+  if (!tutorialSeen) {
+    return <Tutorial onComplete={handleTutorialComplete} />;
+  }
 
   return (
     <div className={`fm-stage ${flashError ? "fm-flash" : ""}`}>

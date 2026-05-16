@@ -16,7 +16,7 @@ The playable foundation. Kids can log in and play, parents can manage accounts.
 | Modes 2-5 (Quick, Speed, Classic, Combo) | Done |
 | Smart dealer (solvability-checked hands) | Done |
 | Server-side expression verification | Done |
-| Home Bucks economy (earn, streak bonus, daily compounding) | Done |
+| Home Bucks economy (earn, PB bonus, daily compounding) | Done |
 | RLS policies (child/parent data isolation) | Done |
 | Rational arithmetic engine (no float drift) | Done |
 | DB migrations + pg_cron for daily compounding | Done |
@@ -29,15 +29,17 @@ The playable foundation. Kids can log in and play, parents can manage accounts.
 
 Make it competitive and polished enough for 50 students to use daily in a classroom.
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| Design polish | Port prototype's card styles, animations, colors, typography to production. The prototype is high-fidelity; production is functional but minimal. | High |
-| Leaderboards | Per-mode rankings: most combos solved, fastest times. New API routes + leaderboard page. Drives classroom competition. | High |
-| Speed bonus | Award extra HB for solving faster than the median time per mode. Config exists in DB (`speed_bonus_threshold`, `speed_bonus_amount`) but logic isn't wired up. | High |
-| Modes 6-9 | Power (7 cards, 300-500), Master (8 cards, 501-999), Wild (9 cards, 1000-9999). Solver already supports them. Needs UI for variable targets + unlock gating. | Medium |
-| Mode unlock UX | Visual progress indicator showing "5 solves in Mode N-1 to unlock Mode N". Currently tracked in API but not surfaced clearly. | Medium |
-| Daily leaderboard filter | "Today only" filter for classroom playtesting — see who's solving the most right now. | Medium |
-| CLAUDE.md update | Project overview still says "production app has not yet been built." Needs refresh. | Low |
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Leaderboards | Per-mode rankings: most solved + fastest (avg top-10, 10-solve qualify gate). Period filters: all time, this week, today. | Done |
+| PB bonus (speed rework) | Replaced flat speed bonus with PB-improvement system. Base HB = mode × 0.5, bonus = seconds improved × base, minimum = base. Decimal HB. Streaks display-only. | Done |
+| Modes 6-9 | Expert (6 cards, 144), Power (7 cards, 300-500), Master (8 cards, 501-999), Wild (9 cards, 1000-9999). Variable targets, unlock gating at 5 solves. | Done |
+| Mode unlock UX | Progress pips per mode ("3 more Classic solves to unlock Combo · 2/5"). Only shown for current mode. | Done |
+| Daily leaderboard filter | "Today" and "This week" period filters on leaderboard page. | Done |
+| Face-down deal | Cards start face-down (⚡ back), flip on "Solve" click. Timer measures thinking time from card reveal. | Done |
+| Vercel SSO disabled | Production deployment publicly accessible without Vercel team login. | Done |
+| Design polish | Port prototype's card styles, animations, colors, typography to production. The prototype is high-fidelity; production is functional but minimal. | In progress |
+| CLAUDE.md update | Project overview still says "production app has not yet been built." Needs refresh. | Not started |
 
 ---
 
