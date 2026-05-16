@@ -28,18 +28,16 @@ export function LandingCTA({ error }: { error?: string }) {
         <div className="fm-alert-error">
           {error === "deactivated"
             ? "Your account has been deactivated. Contact your teacher."
-            : "GT Math is for Alpha and GT students. Please sign in with your @gt.school email."}
+            : "Sign-in failed. Please try again with a valid Google account."}
         </div>
       )}
-
-      <p className="fm-cta-context">For existing Alpha or GT Students</p>
 
       <button
         className="fm-btn fm-btn-primary"
         onClick={handleSignIn}
         disabled={loading}
       >
-        {loading ? "Signing in..." : "Join with your Alpha or GT email"}
+        {loading ? "Signing in..." : "Sign in with Google"}
       </button>
     </div>
   );

@@ -5,11 +5,15 @@ import { mintChildJwt } from "@/lib/jwt";
 const ALLOWED_NEXT = ["/play", "/admin"];
 
 function isEmailAllowed(email: string): boolean {
-  const domain = email.split("@")[1]?.toLowerCase();
   const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? "")
     .split(",")
     .map((d) => d.trim().toLowerCase())
     .filter(Boolean);
+
+  // No domain restriction configured — allow all Google accounts
+  if (allowedDomains.length === 0) return true;
+
+  const domain = email.split("@")[1]?.toLowerCase();
   const superadminEmails = (process.env.SUPERADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
