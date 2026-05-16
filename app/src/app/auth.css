@@ -117,6 +117,28 @@
   font-size: 15px;
   margin: 4px 0 22px;
 }
+.fm-cta-context {
+  color: var(--ink-3);
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+.fm-parents-note {
+  color: var(--ink-4);
+  font-size: 13px;
+  margin-top: 16px;
+  pointer-events: none;
+}
+.fm-alert-error {
+  width: 100%;
+  padding: 12px 14px;
+  border-left: 3px solid var(--danger);
+  background: var(--paper-2);
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 8px;
+}
 
 /* User list */
 .fm-user-list {

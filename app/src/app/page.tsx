@@ -1,7 +1,27 @@
-import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { verifyChildJwt } from "@/lib/jwt";
 import "./auth.css";
+import { LandingCTA } from "./landing-cta";
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const cookieStore = await cookies();
+  const childToken = cookieStore.get("child_jwt")?.value;
+
+  if (childToken) {
+    const result = await verifyChildJwt(childToken);
+    if (result) {
+      redirect("/play");
+    }
+  }
+
+  const params = await searchParams;
+  const error = params.error;
+
   return (
     <div className="fm-login-overlay">
       <div className="fm-login-bg" />
@@ -9,40 +29,14 @@ export default function Home() {
         <div className="fm-login-mark">
           <span className="fm-brand-mark-lg">⚡</span>
         </div>
-        <h1 className="fm-login-title">
-          GTMath<span style={{ color: "var(--alpha-blue)" }}>52</span>
-        </h1>
+        <h1 className="fm-login-title">GT Math</h1>
         <p className="fm-login-sub">
-          Math meets strategy. Deal cards, combine numbers, hit the target.
+          Practice Fast Math. Climb Leaderboards. Earn Home Bucks.
         </p>
 
-        <div className="fm-login-form">
-          <Link
-            href="/pin"
-            className="fm-btn fm-btn-primary"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textDecoration: "none",
-            }}
-          >
-            Play
-          </Link>
+        <LandingCTA error={error} />
 
-          <Link
-            href="/login"
-            className="fm-btn fm-btn-ghost"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textDecoration: "none",
-            }}
-          >
-            Parent sign-in
-          </Link>
-        </div>
+        <p className="fm-parents-note">For Parents — Coming Soon</p>
       </div>
     </div>
   );
