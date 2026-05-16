@@ -527,7 +527,7 @@ export default function PlayPage() {
             {hbEarned != null && (
               <div className="fm-hb-earned">
                 +{hbEarned} HB
-                {speedBonus > 0 && <span className="fm-speed-tag">⚡ Speed bonus!</span>}
+                {speedBonus > 0 && <span className="fm-speed-tag">⚡ New PB! +{speedBonus} HB</span>}
                 {newBalance != null && <span> · Balance: {newBalance} HB</span>}
               </div>
             )}
