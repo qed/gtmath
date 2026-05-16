@@ -666,6 +666,32 @@
 .fm-dash-link:active {
   transform: scale(0.95);
 }
+.fm-signout-btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  background: var(--paper);
+  color: var(--ink-3);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--border) inset;
+  transition: background 120ms var(--ease-standard), color 120ms var(--ease-standard);
+}
+.fm-signout-btn:hover {
+  background: var(--alpha-sky-50);
+  color: var(--alpha-blue);
+}
+.fm-signout-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
 
 /* ── Mode picker pills ─────────────────────────────────────── */
 .fm-mode-pills {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   R,
   apply,
@@ -67,13 +68,20 @@ export default function PlayPage() {
   const [unlockedModes, setUnlockedModes] = useState<number[]>([2]);
   const [modeCounts, setModeCounts] = useState<Record<number, number>>({});
   const [tutorialSeen, setTutorialSeen] = useState<boolean | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const router = useRouter();
 
   const target = hand?.target ?? 0;
 
   const fetchProgress = useCallback(async () => {
     try {
       const res = await fetch("/api/progress", { cache: "no-store" });
+      if (res.status === 401) {
+        setSessionExpired(true);
+        setTimeout(() => { window.location.href = "/"; }, 2000);
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setUnlockedModes(data.unlockedModes);
@@ -84,6 +92,11 @@ export default function PlayPage() {
     } catch {
       // offline — keep current state
     }
+  }, []);
+
+  const handleSignOut = useCallback(async () => {
+    await fetch("/api/auth/signout", { method: "POST" });
+    window.location.href = "/";
   }, []);
 
   useEffect(() => {
@@ -224,6 +237,11 @@ export default function PlayPage() {
           cards: hand.cards,
         }),
       });
+      if (res.status === 401) {
+        setSessionExpired(true);
+        setTimeout(() => { window.location.href = "/"; }, 2000);
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setHbEarned(data.hbEarned);
@@ -318,6 +336,19 @@ export default function PlayPage() {
   const displayTiles = phase === "ready" ? previewCards : tiles;
   const tileCount = displayTiles.length || (hand ? MODES[hand.mode]?.cards : MODES[mode]?.cards) || 4;
 
+  if (sessionExpired) {
+    return (
+      <div className="fm-login-overlay">
+        <div className="fm-login-bg" />
+        <div className="fm-login-card">
+          <p className="fm-login-sub" style={{ margin: 0 }}>
+            Your session expired. Sign in again to continue.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (tutorialSeen === null) {
     return <div className="fm-stage" />;
   }
@@ -357,14 +388,12 @@ export default function PlayPage() {
               <path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M21 5h-4v3a4 4 0 0 0 4-3z"/><path d="M3 5h4v3a4 4 0 0 1-4-3z"/>
             </svg>
           </a>
-          <a href="/dashboard" className="fm-dash-link" title="Dashboard">
+          <button onClick={handleSignOut} className="fm-signout-btn" title="Sign out">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
-          </a>
+            <span className="fm-signout-label">Sign out</span>
+          </button>
         </div>
       </header>
 
