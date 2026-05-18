@@ -512,6 +512,7 @@ export default function PlayPage() {
           const modeCount = modeCounts[mode] ?? 0;
           const rank = ranks[mode];
           const needsUnlock = nextMode <= 9 && !unlockedModes.includes(nextMode);
+          const showNudge = !!nudge && phase === "won";
 
           if (needsUnlock) {
             const pct = Math.min((modeCount / UNLOCK_THRESHOLD) * 100, 100);
@@ -520,7 +521,9 @@ export default function PlayPage() {
                 <div className="fm-progress-track">
                   <div className="fm-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="fm-progress-label">{modeCount}/{UNLOCK_THRESHOLD} to unlock {MODES[nextMode].label}</span>
+                <span className={`fm-progress-label ${showNudge ? "is-nudge" : ""}`}>
+                  {showNudge ? nudge : `${modeCount}/${UNLOCK_THRESHOLD} to unlock ${MODES[nextMode].label}`}
+                </span>
               </div>
             );
           }
@@ -533,7 +536,9 @@ export default function PlayPage() {
                 <div className="fm-progress-track">
                   <div className="fm-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="fm-progress-label">{solveCount}/10 to qualify</span>
+                <span className={`fm-progress-label ${showNudge ? "is-nudge" : ""}`}>
+                  {showNudge ? nudge : `${solveCount}/10 to qualify`}
+                </span>
               </div>
             );
           }
@@ -545,8 +550,8 @@ export default function PlayPage() {
               <div className="fm-progress-track">
                 <div className="fm-progress-fill is-ranked" style={{ width: `${pct}%` }} />
               </div>
-              <span className="fm-progress-label">
-                {rank.position === 1
+              <span className={`fm-progress-label ${showNudge ? "is-nudge" : ""}`}>
+                {showNudge ? nudge : rank.position === 1
                   ? `#1 in ${MODES[mode].label}!`
                   : `#${rank.position} in ${MODES[mode].label}`}
               </span>
@@ -683,17 +688,8 @@ export default function PlayPage() {
         {/* Won result */}
         {phase === "won" && (
           <div className="fm-result won">
-            <div className="fm-result-title">
-              You got {target}. <span className="fm-result-expr-inline">{tiles[0]?.expr}</span>
-            </div>
+            <div className="fm-result-title">You got {target}.</div>
             <div className="fm-result-time">{fmtTime(endMs)}</div>
-            {hbEarned != null && (
-              <span className="fm-hb-inline">
-                +{fmtHB(hbEarned)} HB
-                {speedBonus > 0 && <span className="fm-speed-tag">⚡ PB! +{fmtHB(speedBonus)}</span>}
-              </span>
-            )}
-            {nudge && <span className="fm-nudge">{nudge}</span>}
             {submitting && <span className="fm-preview-hint">Saving...</span>}
             <button className="fm-btn fm-btn-primary" onClick={() => startReady()} type="button">
               Next hand<span className="fm-btn-key">↵</span>
@@ -705,7 +701,7 @@ export default function PlayPage() {
         {phase === "bust" && (
           <div className="fm-result bust">
             <div className="fm-result-title">
-              That&apos;s {rationalLabel(tiles[0]?.value)}, not {target}. <span className="fm-result-expr-inline">{tiles[0]?.expr}</span>
+              That&apos;s {rationalLabel(tiles[0]?.value)}, not {target}.
             </div>
             <div className="fm-result-locked">
               <span className="eyebrow">No retry</span>
