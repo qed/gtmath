@@ -556,7 +556,6 @@ export default function PlayPage() {
 
         {/* Cards + target */}
         <div className="fm-play-row">
-        <span className="fm-target-chip">Make <strong>{target || "—"}</strong></span>
         <div className={`fm-tiles count-${tileCount}`}>
           {displayTiles.map((tile) => {
             const selIdx = selected.indexOf(tile.id);
@@ -614,7 +613,7 @@ export default function PlayPage() {
             );
           })}
         </div>
-
+        <span className="fm-target-chip">Make <strong>{target || "—"}</strong></span>
         </div>
 
         {/* Live expression preview */}
