@@ -287,9 +287,9 @@ export default function Tutorial({ onComplete }: Props) {
           </div>
         )}
 
-        <div className="fm-target-banner">
+        <span className="fm-target-chip">
           Make <strong>{target}</strong>
-        </div>
+        </span>
 
         <div className="fm-tiles count-2">
           {tiles.map((tile, i) => {

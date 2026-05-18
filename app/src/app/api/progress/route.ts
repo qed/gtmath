@@ -16,9 +16,16 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServiceClient();
 
-  const [{ data: solves }, { data: child }] = await Promise.all([
+  const [{ data: solves }, { data: child }, { data: balanceRow }] = await Promise.all([
     supabase.from("solves").select("mode").eq("child_id", auth.childId),
     supabase.from("children").select("tutorial_seen").eq("id", auth.childId).single(),
+    supabase
+      .from("hb_transactions")
+      .select("balance_after")
+      .eq("child_id", auth.childId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const modeCounts: Record<number, number> = {};
@@ -63,5 +70,6 @@ export async function GET(request: NextRequest) {
     unlockThreshold,
     tutorialSeen: child?.tutorial_seen ?? false,
     ranks,
+    balance: Number(balanceRow?.balance_after ?? 0),
   });
 }

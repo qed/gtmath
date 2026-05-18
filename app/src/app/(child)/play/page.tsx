@@ -74,6 +74,7 @@ export default function PlayPage() {
   const [nudge, setNudge] = useState<string | null>(null);
   const [bonusDismissed, setBonusDismissed] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevUnlockedRef = useRef<number[]>([2]);
   const prevModeCountsRef = useRef<Record<number, number>>({});
@@ -97,6 +98,7 @@ export default function PlayPage() {
         setModeCounts(data.modeCounts);
         setTutorialSeen(data.tutorialSeen ?? false);
         setRanks(data.ranks ?? {});
+        if (data.balance != null) setNewBalance(data.balance);
         prevUnlockedRef.current = data.unlockedModes;
         prevModeCountsRef.current = data.modeCounts;
         prevRanksRef.current = data.ranks ?? {};
@@ -441,22 +443,53 @@ export default function PlayPage() {
     <div className={`fm-stage ${flashError ? "fm-flash" : ""}`}>
       {/* ── Header ── */}
       <header className="fm-top">
-        <div className="fm-brand">
-          <span className="fm-brand-mark">⚡</span>
-          <span>GTMath<span className="fm-brand-52">52</span></span>
+        <div className="fm-top-left">
+          <div className="fm-brand">
+            <span className="fm-brand-mark">⚡</span>
+            <span>GTMath<span className="fm-brand-52">52</span></span>
+          </div>
+          <div className="fm-mode-select">
+            <button className="fm-mode-trigger" onClick={() => setModeMenuOpen((v) => !v)} type="button">
+              {MODES[mode].label}
+              <span className="fm-mode-arrow">&#x25BE;</span>
+            </button>
+            {modeMenuOpen && (
+              <>
+                <div className="fm-mode-backdrop" onClick={() => setModeMenuOpen(false)} />
+                <div className="fm-mode-dropdown">
+                  {ALL_MODES.map((m) => {
+                    const locked = !unlockedModes.includes(m);
+                    return (
+                      <button
+                        key={m}
+                        className={`fm-mode-option ${m === mode ? "is-on" : ""} ${locked ? "is-locked" : ""}`}
+                        disabled={locked}
+                        onClick={() => { setMode(m); startReady(m); setModeMenuOpen(false); }}
+                        type="button"
+                      >
+                        {locked ? "🔒 " : ""}{MODES[m].label}
+                        <span className="fm-mode-meta">{MODES[m].cards} cards</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="fm-timer" aria-live="polite">
-          {phase === "ready" ? (
-            <span className="fm-timer-idle">Ready</span>
-          ) : phase === "playing" ? (
+          {phase === "playing" ? (
             <span>{fmtTime(elapsed)}</span>
-          ) : (
+          ) : phase !== "ready" ? (
             <span>{fmtTime(endMs)}</span>
-          )}
+          ) : null}
         </div>
 
         <div className="fm-top-right">
+          {newBalance != null && (
+            <span className="fm-hb-header">{fmtHB(newBalance)} HB</span>
+          )}
           <a href="/leaderboard" className="fm-dash-link" title="Leaderboard">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M21 5h-4v3a4 4 0 0 0 4-3z"/><path d="M3 5h4v3a4 4 0 0 1-4-3z"/>
@@ -473,33 +506,6 @@ export default function PlayPage() {
 
       {/* ── Main game area ── */}
       <main className={`fm-main is-${phase}`}>
-        {/* Mode pills */}
-        <div className="fm-mode-pills">
-          {ALL_MODES.map((m) => {
-            const locked = !unlockedModes.includes(m);
-            const classicRank = ranks[4];
-            const showBonus = m === 5 && !locked && !bonusDismissed
-              && classicRank?.position != null && classicRank.position <= 3;
-            return (
-              <button
-                key={m}
-                onClick={() => {
-                  if (locked) return;
-                  if (showBonus) setBonusDismissed(true);
-                  setMode(m);
-                  startReady(m);
-                }}
-                className={`fm-mode-pill ${m === mode ? "is-on" : ""} ${locked ? "is-locked" : ""} ${showBonus ? "has-bonus" : ""}`}
-                disabled={locked}
-                title={locked ? `Solve ${UNLOCK_THRESHOLD} in ${MODES[m - 1]?.label} to unlock` : MODES[m].short}
-              >
-                {locked ? "🔒 " : ""}{MODES[m].label}
-                {showBonus && <span className="fm-bonus-badge">⭐</span>}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Progress bar */}
         {(() => {
           const nextMode = mode + 1;
@@ -514,7 +520,7 @@ export default function PlayPage() {
                 <div className="fm-progress-track">
                   <div className="fm-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <div className="fm-progress-label">{modeCount}/{UNLOCK_THRESHOLD} to unlock {MODES[nextMode].label}</div>
+                <span className="fm-progress-label">{modeCount}/{UNLOCK_THRESHOLD} to unlock {MODES[nextMode].label}</span>
               </div>
             );
           }
@@ -527,7 +533,7 @@ export default function PlayPage() {
                 <div className="fm-progress-track">
                   <div className="fm-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <div className="fm-progress-label">{solveCount}/10 to qualify for the leaderboard</div>
+                <span className="fm-progress-label">{solveCount}/10 to qualify</span>
               </div>
             );
           }
@@ -539,21 +545,18 @@ export default function PlayPage() {
               <div className="fm-progress-track">
                 <div className="fm-progress-fill is-ranked" style={{ width: `${pct}%` }} />
               </div>
-              <div className="fm-progress-label">
+              <span className="fm-progress-label">
                 {rank.position === 1
-                  ? `You're #1 in ${MODES[mode].label} this week!`
-                  : `#${rank.position} in ${MODES[mode].label} this week`}
-              </div>
+                  ? `#1 in ${MODES[mode].label}!`
+                  : `#${rank.position} in ${MODES[mode].label}`}
+              </span>
             </div>
           );
         })()}
 
-        {/* Target banner */}
-        <div className="fm-target-banner">
-          Make <strong>{target || "—"}</strong>
-        </div>
-
-        {/* Card tiles */}
+        {/* Cards + target */}
+        <div className="fm-play-row">
+        <span className="fm-target-chip">Make <strong>{target || "—"}</strong></span>
         <div className={`fm-tiles count-${tileCount}`}>
           {displayTiles.map((tile) => {
             const selIdx = selected.indexOf(tile.id);
@@ -610,6 +613,8 @@ export default function PlayPage() {
               </button>
             );
           })}
+        </div>
+
         </div>
 
         {/* Live expression preview */}
@@ -679,28 +684,21 @@ export default function PlayPage() {
         {/* Won result */}
         {phase === "won" && (
           <div className="fm-result won">
-            <div className="fm-result-title">You got {target}.</div>
-            <div className="fm-result-time">{fmtTime(endMs)}</div>
-            <div className="fm-result-expr">{tiles[0]?.expr}</div>
-            {hbEarned != null && (
-              <div className="fm-hb-earned">
-                +{fmtHB(hbEarned)} HB
-                {speedBonus > 0 && <span className="fm-speed-tag">⚡ New PB! +{fmtHB(speedBonus)} HB</span>}
-                {newBalance != null && <span> · Balance: {fmtHB(newBalance)} HB</span>}
-              </div>
-            )}
-            {nudge && (
-              <div className="fm-nudge">{nudge}</div>
-            )}
-            {submitting && (
-              <span className="fm-preview-hint">Saving...</span>
-            )}
-            <div className="fm-result-actions">
-              <button className="fm-btn fm-btn-primary" onClick={() => startReady()} type="button">
-                Next hand
-                <span className="fm-btn-key">↵</span>
-              </button>
+            <div className="fm-result-title">
+              You got {target}. <span className="fm-result-expr-inline">{tiles[0]?.expr}</span>
             </div>
+            <div className="fm-result-time">{fmtTime(endMs)}</div>
+            {hbEarned != null && (
+              <span className="fm-hb-inline">
+                +{fmtHB(hbEarned)} HB
+                {speedBonus > 0 && <span className="fm-speed-tag">⚡ PB! +{fmtHB(speedBonus)}</span>}
+              </span>
+            )}
+            {nudge && <span className="fm-nudge">{nudge}</span>}
+            {submitting && <span className="fm-preview-hint">Saving...</span>}
+            <button className="fm-btn fm-btn-primary" onClick={() => startReady()} type="button">
+              Next hand<span className="fm-btn-key">↵</span>
+            </button>
           </div>
         )}
 
@@ -708,19 +706,15 @@ export default function PlayPage() {
         {phase === "bust" && (
           <div className="fm-result bust">
             <div className="fm-result-title">
-              That&apos;s {rationalLabel(tiles[0]?.value)}, not {target}.
+              That&apos;s {rationalLabel(tiles[0]?.value)}, not {target}. <span className="fm-result-expr-inline">{tiles[0]?.expr}</span>
             </div>
-            <div className="fm-result-expr">{tiles[0]?.expr}</div>
             <div className="fm-result-locked">
               <span className="eyebrow">No retry</span>
-              <span>This hand is locked. Deal a new one.</span>
+              <span>This hand is locked.</span>
             </div>
-            <div className="fm-result-actions">
-              <button className="fm-btn fm-btn-primary" onClick={() => startReady()} type="button">
-                Next hand
-                <span className="fm-btn-key">↵</span>
-              </button>
-            </div>
+            <button className="fm-btn fm-btn-primary" onClick={() => startReady()} type="button">
+              Next hand<span className="fm-btn-key">↵</span>
+            </button>
           </div>
         )}
       </main>

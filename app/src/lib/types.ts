@@ -71,6 +71,7 @@ export interface ProgressResponse {
   unlockThreshold: number;
   tutorialSeen: boolean;
   ranks: Record<number, RankData>;
+  balance: number;
 }
 
 export interface ChildProfile {
