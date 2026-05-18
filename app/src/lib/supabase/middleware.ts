@@ -1,5 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { verifyChildJwt } from "@/lib/jwt";
+
+function isSuperadmin(email: string): boolean {
+  const superadminEmails = (process.env.SUPERADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return superadminEmails.includes(email.toLowerCase());
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -29,23 +38,47 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const childToken = request.cookies.get("child_jwt")?.value;
   const path = request.nextUrl.pathname;
 
-  if (path.startsWith("/play") || path.startsWith("/pin")) {
-    if (!childToken && !user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
+  // Gate legacy parent routes
+  if (
+    path.startsWith("/login") ||
+    path.startsWith("/dashboard") ||
+    path.startsWith("/pin")
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
   }
 
-  if (path.startsWith("/dashboard")) {
-    if (!user) {
+  // Gate /play — require valid child_jwt signature
+  if (path.startsWith("/play")) {
+    const childToken = request.cookies.get("child_jwt")?.value;
+    if (!childToken) {
       const url = request.nextUrl.clone();
-      url.pathname = "/login";
+      url.pathname = "/";
       return NextResponse.redirect(url);
     }
+    const verified = await verifyChildJwt(childToken);
+    if (!verified) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
+  }
+
+  // Gate /admin and /api/admin — require Supabase session + superadmin email
+  if (path.startsWith("/admin") || path.startsWith("/api/admin")) {
+    if (!user || !user.email || !isSuperadmin(user.email)) {
+      if (path.startsWith("/api/admin")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
   }
 
   return supabaseResponse;

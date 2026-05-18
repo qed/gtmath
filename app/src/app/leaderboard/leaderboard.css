@@ -87,6 +87,7 @@
 .lb-pills {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 .lb-pill {
   appearance: none;
@@ -172,6 +173,10 @@
   font-weight: 600;
   font-size: 15px;
   color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .lb-avatar {
   display: inline-grid;
@@ -227,6 +232,10 @@
     gap: 16px;
     margin-bottom: 20px;
   }
+  .lb-pill {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
   .lb-row {
     grid-template-columns: 40px 1fr auto;
     gap: 8px;
@@ -234,5 +243,9 @@
   }
   .lb-stat {
     font-size: 15px;
+  }
+  .lb-qualify {
+    padding: 12px 14px;
+    font-size: 13px;
   }
 }

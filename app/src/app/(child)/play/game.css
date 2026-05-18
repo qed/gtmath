@@ -104,6 +104,26 @@
   position: relative;
 }
 
+/* ── Target banner ────────────────────────────────────────── */
+.fm-target-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: #FFD600;
+  color: #000;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  border-radius: var(--r-md);
+  letter-spacing: -0.01em;
+}
+.fm-target-banner strong {
+  font-size: 24px;
+  font-weight: 900;
+}
+
 /* ── Tile row ──────────────────────────────────────────────── */
 .fm-tiles {
   display: flex;
@@ -361,13 +381,17 @@
   color: var(--ink-4);
   opacity: 0.45;
 }
+.fm-pe-op {
+  color: var(--alpha-blue);
+  font-weight: 800;
+}
 .fm-pe-swap {
   appearance: none;
   border: 0;
   cursor: pointer;
   background: transparent;
-  width: 26px;
-  height: 26px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -442,6 +466,12 @@
 .fm-op:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+.fm-op.is-on {
+  background: var(--alpha-blue);
+  color: #fff;
+  box-shadow: var(--shadow-blue);
+  transform: scale(1.05);
 }
 
 /* Secondary actions row */
@@ -666,12 +696,39 @@
 .fm-dash-link:active {
   transform: scale(0.95);
 }
+.fm-signout-btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  background: var(--paper);
+  color: var(--ink-3);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--border) inset;
+  transition: background 120ms var(--ease-standard), color 120ms var(--ease-standard);
+}
+.fm-signout-btn:hover {
+  background: var(--alpha-sky-50);
+  color: var(--alpha-blue);
+}
+.fm-signout-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
 
 /* ── Mode picker pills ─────────────────────────────────────── */
 .fm-mode-pills {
   display: flex;
   gap: 6px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 .fm-mode-pill {
   appearance: none;
@@ -799,6 +856,9 @@
 
 /* ── Small-screen tweaks ───────────────────────────────────── */
 @media (max-width: 520px) {
+  .fm-stage {
+    overflow-x: hidden;
+  }
   .fm-top {
     padding: 14px 16px;
     gap: 10px;
@@ -810,20 +870,24 @@
     font-size: 15px;
   }
   .fm-target .eyebrow {
-    font-size: 9.5px;
+    font-size: 11px;
   }
   .fm-timer {
     font-size: 18px;
+  }
+  .fm-signout-label {
+    display: none;
   }
   .fm-main {
     padding: 8px 12px;
     gap: 18px;
   }
-  .fm-foot {
-    padding: 8px 14px 14px;
+  .fm-mode-pill {
+    padding: 10px 12px;
+    font-size: 12px;
   }
-  .fm-foot .caption {
-    font-size: 10.5px;
+  .fm-foot {
+    display: none;
   }
 }
 @media (max-width: 360px) {

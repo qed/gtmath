@@ -36,6 +36,7 @@ export interface HistoryEntry {
   tiles: Tile[];
   selected: string[];
   expression: string;
+  pendingOp?: OpSymbol | null;
 }
 
 export type GamePhase = "ready" | "playing" | "won" | "bust";
