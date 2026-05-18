@@ -57,6 +57,21 @@ export interface SolveResult {
   streakDays: number;
 }
 
+export interface RankData {
+  position: number | null;
+  avgTimeMs: number | null;
+  totalRanked: number;
+  solveCount: number;
+}
+
+export interface ProgressResponse {
+  modeCounts: Record<number, number>;
+  unlockedModes: number[];
+  unlockThreshold: number;
+  tutorialSeen: boolean;
+  ranks: Record<number, RankData>;
+}
+
 export interface ChildProfile {
   id: string;
   name: string;
