@@ -39,7 +39,10 @@ export async function GET(request: NextRequest) {
       p_child_id: auth.childId,
       p_mode: m,
       p_period: "week",
-    }).then(({ data }) => [m, data] as const)
+    }).then(({ data, error }) => {
+      if (error) console.error(`child_leaderboard_rank mode ${m}:`, error.message);
+      return [m, data] as const;
+    })
   );
   const rankResults = await Promise.all(rankPromises);
 

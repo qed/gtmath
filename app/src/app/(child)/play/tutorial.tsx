@@ -41,7 +41,7 @@ export default function Tutorial({ onComplete }: Props) {
   const [step, setStep] = useState<Step>("welcome");
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [pendingOp, setPendingOp] = useState<string | null>(null);
+  const [pendingOp, setPendingOp] = useState<OpSymbol | null>(null);
 
   const hand = handIdx >= 0 ? HANDS[handIdx] : null;
   const target = hand?.target ?? 6;
@@ -192,7 +192,7 @@ export default function Tutorial({ onComplete }: Props) {
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  });
+  }, [step, tiles, handleTileTap, handleOp, onComplete, handIdx]);
 
   // Highlight states for guided hand (full guide)
   const highlightCard0 = guide === "full" && step === "playing" && selected.length === 0 && !pendingOp;

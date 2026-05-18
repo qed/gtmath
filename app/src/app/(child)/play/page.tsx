@@ -10,15 +10,10 @@ import {
   rationalLabel,
   MODES,
 } from "@/lib/solver";
-import type { Rational, Card, Tile, HistoryEntry, GamePhase, OpSymbol, Deal, RankData, ProgressResponse } from "@/lib/types";
+import type { Card, Tile, HistoryEntry, GamePhase, OpSymbol, Deal, RankData, ProgressResponse } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import Tutorial from "./tutorial";
 import "./game.css";
-
-const MODE_NAMES: Record<number, string> = {
-  2: "Quick", 3: "Speed", 4: "Classic", 5: "Combo",
-  6: "Expert", 7: "Power", 8: "Master", 9: "Wild",
-};
 
 const ALL_MODES = [2, 3, 4, 5, 6, 7, 8, 9];
 const UNLOCK_THRESHOLD = 5;
@@ -92,8 +87,11 @@ export default function PlayPage() {
         const data: ProgressResponse = await res.json();
         setUnlockedModes(data.unlockedModes);
         setModeCounts(data.modeCounts);
-        setTutorialSeen(data.tutorialSeen ?? true);
+        setTutorialSeen(data.tutorialSeen ?? false);
         setRanks(data.ranks ?? {});
+        prevUnlockedRef.current = data.unlockedModes;
+        prevModeCountsRef.current = data.modeCounts;
+        prevRanksRef.current = data.ranks ?? {};
         setMode((prev) => data.unlockedModes.includes(prev) ? prev : Math.max(...data.unlockedModes));
         return data;
       }
@@ -248,20 +246,20 @@ export default function PlayPage() {
         setNewBalance(data.newBalance);
         setSpeedBonus(data.speedBonus ?? 0);
 
-        prevUnlockedRef.current = [...unlockedModes];
-        prevModeCountsRef.current = { ...modeCounts };
-        prevRanksRef.current = { ...ranks };
+        const prevUnlocked = [...prevUnlockedRef.current];
+        const prevCounts = { ...prevModeCountsRef.current };
+        const prevRanksSnap = { ...prevRanksRef.current };
 
         const progress = await fetchProgress();
         if (progress) {
           const newCelebrations: Array<{ type: "unlock" | "qualify"; mode: number }> = [];
           for (const m of progress.unlockedModes) {
-            if (!prevUnlockedRef.current.includes(m)) {
+            if (!prevUnlocked.includes(m)) {
               newCelebrations.push({ type: "unlock", mode: m });
             }
           }
           for (const m of progress.unlockedModes) {
-            const prevCount = prevModeCountsRef.current[m] ?? 0;
+            const prevCount = prevCounts[m] ?? 0;
             const newCount = progress.modeCounts[m] ?? 0;
             const r = progress.ranks?.[m];
             if (prevCount < 10 && newCount >= 10 && r?.position != null) {
@@ -273,15 +271,15 @@ export default function PlayPage() {
           }
 
           const curMode = hand.mode;
-          const prevRank = prevRanksRef.current[curMode];
+          const prevRank = prevRanksSnap[curMode];
           const newRank = progress.ranks?.[curMode];
           if (prevRank?.position != null && newRank?.position != null && newRank.position < prevRank.position) {
-            setNudge(`You moved up to #${newRank.position} in ${MODE_NAMES[curMode]}!`);
+            setNudge(`You moved up to #${newRank.position} in ${MODES[curMode].label}!`);
           } else {
             const nextM = curMode + 1;
             const remaining = UNLOCK_THRESHOLD - (progress.modeCounts[curMode] ?? 0);
             if (nextM <= 9 && !progress.unlockedModes.includes(nextM) && remaining <= 2 && remaining > 0) {
-              setNudge(`${remaining} more to unlock ${MODE_NAMES[nextM]}!`);
+              setNudge(`${remaining} more to unlock ${MODES[nextM].label}!`);
             } else {
               const solveCount = newRank?.solveCount ?? 0;
               const qualRemaining = 10 - solveCount;
@@ -478,7 +476,7 @@ export default function PlayPage() {
                 <div className="fm-progress-track">
                   <div className="fm-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <div className="fm-progress-label">{modeCount}/{UNLOCK_THRESHOLD} to unlock {MODE_NAMES[nextMode]}</div>
+                <div className="fm-progress-label">{modeCount}/{UNLOCK_THRESHOLD} to unlock {MODES[nextMode].label}</div>
               </div>
             );
           }
@@ -505,8 +503,8 @@ export default function PlayPage() {
               </div>
               <div className="fm-progress-label">
                 {rank.position === 1
-                  ? `You're #1 in ${MODE_NAMES[mode]} this week!`
-                  : `#${rank.position} in ${MODE_NAMES[mode]} this week`}
+                  ? `You're #1 in ${MODES[mode].label} this week!`
+                  : `#${rank.position} in ${MODES[mode].label} this week`}
               </div>
             </div>
           );
@@ -695,12 +693,12 @@ export default function PlayPage() {
             <div className="fm-tut-overlay fm-celebration">
               <div className="fm-tut-card">
                 <div className="fm-tut-emoji">🔓</div>
-                <h1 className="fm-tut-heading">You unlocked {MODE_NAMES[cel.mode]}!</h1>
+                <h1 className="fm-tut-heading">You unlocked {MODES[cel.mode].label}!</h1>
                 <p className="fm-tut-body">
                   {MODES[cel.mode]?.cards} cards, target {MODES[cel.mode]?.target ?? "varies"}. Ready to level up?
                 </p>
                 <button className="fm-btn fm-btn-primary" onClick={() => { setMode(cel.mode); startReady(cel.mode); dismiss(); }} type="button">
-                  Try {MODE_NAMES[cel.mode]}
+                  Try {MODES[cel.mode].label}
                 </button>
                 <button className="fm-btn fm-btn-ghost" onClick={dismiss} type="button">
                   Keep playing
@@ -715,7 +713,7 @@ export default function PlayPage() {
               <div className="fm-tut-emoji">📊</div>
               <h1 className="fm-tut-heading">You&apos;re on the leaderboard!</h1>
               <p className="fm-tut-body">
-                You qualified in {MODE_NAMES[cel.mode]} with 10+ solves.
+                You qualified in {MODES[cel.mode].label} with 10+ solves.
               </p>
               <button className="fm-btn fm-btn-primary" onClick={() => { router.push(`/leaderboard?mode=${cel.mode}&metric=fastest&period=week`); dismiss(); }} type="button">
                 See your rank
