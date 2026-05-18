@@ -724,20 +724,33 @@ export default function PlayPage() {
         const cel = celebrations[0];
         const dismiss = () => setCelebrations((prev) => prev.slice(1));
         if (cel.type === "unlock") {
+          const prevMode = cel.mode - 1;
+          const prevCount = modeCounts[prevMode] ?? 0;
+          const qualRemaining = Math.max(10 - prevCount, 0);
+          const prevRank = ranks[prevMode];
+          const stayDesc = qualRemaining > 0
+            ? `${qualRemaining} more solve${qualRemaining > 1 ? "s" : ""} to qualify`
+            : prevRank?.position != null
+              ? `You're #${prevRank.position} — keep climbing`
+              : "Keep solving to rank up";
           return (
             <div className="fm-tut-overlay fm-celebration">
               <div className="fm-tut-card">
                 <div className="fm-tut-emoji">🔓</div>
-                <h1 className="fm-tut-heading">You unlocked {MODES[cel.mode].label}!</h1>
-                <p className="fm-tut-body">
-                  {MODES[cel.mode]?.cards} cards, target {MODES[cel.mode]?.target ?? "varies"}. Ready to level up?
-                </p>
-                <button className="fm-btn fm-btn-primary" onClick={() => { setMode(cel.mode); startReady(cel.mode); dismiss(); }} type="button">
-                  Try {MODES[cel.mode].label}
-                </button>
-                <button className="fm-btn fm-btn-ghost" onClick={dismiss} type="button">
-                  Keep playing
-                </button>
+                <h1 className="fm-tut-heading">{MODES[cel.mode].label} unlocked!</h1>
+                <p className="fm-tut-body">What&apos;s your next move?</p>
+                <div className="fm-cel-choices">
+                  <button className="fm-cel-choice" onClick={() => { setMode(cel.mode); startReady(cel.mode); dismiss(); }} type="button">
+                    <span className="fm-cel-icon">🚀</span>
+                    <span className="fm-cel-choice-title">Go harder</span>
+                    <span className="fm-cel-choice-desc">{MODES[cel.mode].cards} cards, target {MODES[cel.mode]?.target ?? "varies"}</span>
+                  </button>
+                  <button className="fm-cel-choice" onClick={dismiss} type="button">
+                    <span className="fm-cel-icon">🏆</span>
+                    <span className="fm-cel-choice-title">Own the {MODES[prevMode].label} leaderboard</span>
+                    <span className="fm-cel-choice-desc">{stayDesc}</span>
+                  </button>
+                </div>
               </div>
             </div>
           );
