@@ -273,12 +273,6 @@ export default function Tutorial({ onComplete }: Props) {
           <span className="fm-brand-mark">{"⚡"}</span>
           <span>Tutorial</span>
         </div>
-        <div>
-          <span className="fm-target">
-            <span className="eyebrow">Make</span>
-            <span className="fm-target-num">{target}</span>
-          </span>
-        </div>
         <div className="fm-top-right">
           <span className="fm-tut-step-badge">
             {handIdx + 1} / {HANDS.length}
@@ -292,6 +286,10 @@ export default function Tutorial({ onComplete }: Props) {
             {instruction}
           </div>
         )}
+
+        <div className="fm-target-banner">
+          Make <strong>{target}</strong>
+        </div>
 
         <div className="fm-tiles count-2">
           {tiles.map((tile, i) => {
