@@ -10,7 +10,7 @@ const HANDS: { cards: Card[]; target: number; guide: "full" | "semi" | "free" }[
   { cards: [{ rank: 9, suit: "♠" }, { rank: 3, suit: "♥" }], target: 6, guide: "free" },
 ];
 
-const CELEBRATE = ["Nice work!", "Great thinking!", "You’re a natural!"];
+const CELEBRATE = ["Nice work!", "Great thinking!", "You're a natural!"];
 
 const RED_SUITS = ["♥", "♦"];
 const isRed = (s: string) => RED_SUITS.includes(s);
@@ -41,6 +41,7 @@ export default function Tutorial({ onComplete }: Props) {
   const [step, setStep] = useState<Step>("welcome");
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [pendingOp, setPendingOp] = useState<OpSymbol | null>(null);
 
   const hand = handIdx >= 0 ? HANDS[handIdx] : null;
   const target = hand?.target ?? 6;
@@ -50,32 +51,15 @@ export default function Tutorial({ onComplete }: Props) {
     setHandIdx(idx);
     setTiles(makeTiles(HANDS[idx].cards));
     setSelected([]);
+    setPendingOp(null);
     setStep("playing");
   }
 
-  const handleTileTap = useCallback(
-    (id: string) => {
-      if (step !== "playing") return;
-      setSelected((prev) => {
-        if (prev.includes(id)) return prev.filter((s) => s !== id);
-        if (prev.length >= 2) return [prev[0], id];
-        return [...prev, id];
-      });
-    },
-    [step],
-  );
-
-  const swapOperands = useCallback(() => {
-    setSelected((prev) => (prev.length === 2 ? [prev[1], prev[0]] : prev));
-  }, []);
-
-  const handleOp = useCallback(
-    (op: OpSymbol) => {
-      if (step !== "playing" || selected.length !== 2) return;
-
-      const a = tiles.find((t) => t.id === selected[0])!;
-      const b = tiles.find((t) => t.id === selected[1])!;
-      const result = apply(op, a.value, b.value);
+  const executeOp = useCallback(
+    (op: string, firstId: string, secondId: string, currentTiles: Tile[]) => {
+      const a = currentTiles.find((t) => t.id === firstId)!;
+      const b = currentTiles.find((t) => t.id === secondId)!;
+      const result = apply(op as OpSymbol, a.value, b.value);
 
       if (!result) return;
 
@@ -90,6 +74,7 @@ export default function Tutorial({ onComplete }: Props) {
 
       setTiles([newTile]);
       setSelected([]);
+      setPendingOp(null);
 
       if (eqTarget(result, target)) {
         setStep("correct");
@@ -97,13 +82,53 @@ export default function Tutorial({ onComplete }: Props) {
         setStep("wrong");
       }
     },
-    [step, selected, tiles, target],
+    [target],
+  );
+
+  const handleTileTap = useCallback(
+    (id: string) => {
+      if (step !== "playing") return;
+
+      if (selected.length === 1 && selected[0] === id) {
+        // Tap same tile → deselect, clear pendingOp
+        setSelected([]);
+        setPendingOp(null);
+        return;
+      }
+
+      if (selected.length === 1 && pendingOp) {
+        // Have first card + op → execute with this second card
+        executeOp(pendingOp, selected[0], id, tiles);
+        return;
+      }
+
+      if (selected.length === 1 && !pendingOp) {
+        // Have first card but no op → replace selection
+        setSelected([id]);
+        return;
+      }
+
+      // No selection → select this tile
+      setSelected([id]);
+      setPendingOp(null);
+    },
+    [step, selected, pendingOp, tiles, executeOp],
+  );
+
+  const handleOp = useCallback(
+    (op: OpSymbol) => {
+      if (step !== "playing" || selected.length !== 1) return;
+      // Set (or replace) the pending operator
+      setPendingOp(op);
+    },
+    [step, selected],
   );
 
   function retry() {
     if (!hand) return;
     setTiles(makeTiles(hand.cards));
     setSelected([]);
+    setPendingOp(null);
     setStep("playing");
   }
 
@@ -159,36 +184,41 @@ export default function Tutorial({ onComplete }: Props) {
         handleOp(opMap[e.key]);
         return;
       }
-      if (e.key === "s" || e.key === "S") {
-        e.preventDefault();
-        swapOperands();
-      }
       if (e.key === "Escape") {
         e.preventDefault();
         setSelected([]);
+        setPendingOp(null);
       }
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  });
+  }, [step, tiles, handleTileTap, handleOp, onComplete, handIdx]);
 
-  const highlightCard0 = guide === "full" && step === "playing" && selected.length === 0;
-  const highlightCard1 = guide === "full" && step === "playing" && selected.length === 1;
-  const highlightPlus = guide === "full" && step === "playing" && selected.length === 2;
+  // Highlight states for guided hand (full guide)
+  const highlightCard0 = guide === "full" && step === "playing" && selected.length === 0 && !pendingOp;
+  const highlightOp = guide === "full" && step === "playing" && selected.length === 1 && !pendingOp;
+  const highlightCard1 = guide === "full" && step === "playing" && selected.length === 1 && !!pendingOp;
 
   let instruction = "";
   if (step === "playing") {
     if (guide === "full") {
-      if (selected.length === 0) instruction = "Tap the first card";
-      else if (selected.length === 1) instruction = "Now tap the second card";
-      else instruction = "Tap + to combine them";
+      if (selected.length === 0) instruction = "Tap a card";
+      else if (selected.length === 1 && !pendingOp) instruction = "Pick an operation";
+      else if (selected.length === 1 && pendingOp) instruction = "Tap the second card";
     } else if (guide === "semi") {
-      if (selected.length < 2) instruction = "Tap both cards";
-      else instruction = `Which operation makes ${target}?`;
+      instruction = "Tap a card, pick an op, tap the second card";
     } else {
-      if (selected.length < 2) instruction = `Your turn — make ${target}!`;
+      instruction = `Your turn — make ${target}!`;
     }
   }
+
+  // Preview tile expression helper
+  const selectedTile = selected[0] ? tiles.find((t) => t.id === selected[0]) : undefined;
+  const selectedExpr = selectedTile
+    ? selectedTile.kind === "card"
+      ? selectedTile.expr
+      : `(${selectedTile.expr})`
+    : null;
 
   if (step === "welcome") {
     return (
@@ -197,8 +227,8 @@ export default function Tutorial({ onComplete }: Props) {
           <div className="fm-brand-mark-lg">⚡</div>
           <h1 className="fm-tut-heading">How to Play</h1>
           <p className="fm-tut-body">
-            Tap two cards, then pick an operation to combine them. Make the
-            target number to win!
+            Tap a card, pick an operation, then tap a second card to combine.
+            Make the target number to win!
           </p>
           <button
             className="fm-btn fm-btn-primary"
@@ -265,9 +295,8 @@ export default function Tutorial({ onComplete }: Props) {
 
         <div className="fm-tiles count-2">
           {tiles.map((tile, i) => {
-            const selIdx = selected.indexOf(tile.id);
-            const isSel = selIdx !== -1;
-            const isDim = step === "playing" && selected.length === 2 && !isSel;
+            const isSel = selected.includes(tile.id);
+            const isDim = step === "playing" && selected.length === 1 && pendingOp && !isSel;
             const pulse =
               (highlightCard0 && i === 0) || (highlightCard1 && !isSel);
             const isFinal =
@@ -282,11 +311,6 @@ export default function Tutorial({ onComplete }: Props) {
                   onClick={() => handleTileTap(tile.id)}
                   type="button"
                 >
-                  {isSel && selected.length === 2 && (
-                    <span className="fm-badge">
-                      {selIdx === 0 ? "①" : "②"}
-                    </span>
-                  )}
                   <span className={`fm-pc-corner tl ${red ? "red" : ""}`}>
                     <span className="rank">{rankLabel(tile.card.rank)}</span>
                     <span className="suit">{tile.card.suit}</span>
@@ -317,31 +341,18 @@ export default function Tutorial({ onComplete }: Props) {
 
         {step === "playing" && selected.length > 0 && (
           <div className="fm-preview">
-            {selected.length === 1 && (
+            {selected.length === 1 && !pendingOp && (
               <span className="fm-preview-expr">
-                <span className="fm-pe-tok">
-                  {tiles.find((t) => t.id === selected[0])?.expr}
-                </span>
+                <span className="fm-pe-tok">{selectedExpr}</span>
                 <span className="fm-pe-tok fm-pe-empty">?</span>
                 <span className="fm-pe-tok fm-pe-empty">?</span>
               </span>
             )}
-            {selected.length === 2 && (
+            {selected.length === 1 && pendingOp && (
               <span className="fm-preview-expr is-ready">
-                <span className="fm-pe-tok">
-                  {tiles.find((t) => t.id === selected[0])?.expr}
-                </span>
-                <button
-                  className="fm-pe-swap"
-                  onClick={swapOperands}
-                  title="Swap"
-                  type="button"
-                >
-                  {"⇆"}
-                </button>
-                <span className="fm-pe-tok">
-                  {tiles.find((t) => t.id === selected[1])?.expr}
-                </span>
+                <span className="fm-pe-tok">{selectedExpr}</span>
+                <span className="fm-pe-tok">{pendingOp}</span>
+                <span className="fm-pe-tok fm-pe-empty">?</span>
               </span>
             )}
           </div>
@@ -350,14 +361,14 @@ export default function Tutorial({ onComplete }: Props) {
         {step === "playing" && (
           <div className="fm-actions playing">
             <div
-              className={`fm-ops ${selected.length === 2 ? "is-ready" : ""}`}
+              className={`fm-ops ${selected.length === 1 ? "is-ready" : ""}`}
             >
               {(["+", "−", "×", "÷"] as OpSymbol[]).map(
                 (op) => (
                   <button
                     key={op}
-                    className={`fm-op ${highlightPlus && op === "+" ? "fm-tut-pulse" : ""}`}
-                    disabled={selected.length !== 2}
+                    className={`fm-op ${highlightOp && op === "+" ? "fm-tut-pulse" : ""} ${pendingOp === op ? "is-active" : ""}`}
+                    disabled={selected.length !== 1}
                     onClick={() => handleOp(op)}
                     type="button"
                   >

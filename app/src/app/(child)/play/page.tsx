@@ -10,7 +10,8 @@ import {
   rationalLabel,
   MODES,
 } from "@/lib/solver";
-import type { Rational, Card, Tile, HistoryEntry, GamePhase, OpSymbol, Deal } from "@/lib/types";
+import type { Card, Tile, HistoryEntry, GamePhase, OpSymbol, Deal, RankData, ProgressResponse } from "@/lib/types";
+import { useRouter } from "next/navigation";
 import Tutorial from "./tutorial";
 import "./game.css";
 
@@ -67,23 +68,37 @@ export default function PlayPage() {
   const [unlockedModes, setUnlockedModes] = useState<number[]>([2]);
   const [modeCounts, setModeCounts] = useState<Record<number, number>>({});
   const [tutorialSeen, setTutorialSeen] = useState<boolean | null>(null);
+  const [ranks, setRanks] = useState<Record<number, RankData>>({});
+  const [celebrations, setCelebrations] = useState<Array<{ type: "unlock" | "qualify"; mode: number }>>([]);
+  const [nudge, setNudge] = useState<string | null>(null);
+  const [bonusDismissed, setBonusDismissed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevUnlockedRef = useRef<number[]>([2]);
+  const prevModeCountsRef = useRef<Record<number, number>>({});
+  const prevRanksRef = useRef<Record<number, RankData>>({});
+  const router = useRouter();
 
   const target = hand?.target ?? 0;
 
-  const fetchProgress = useCallback(async () => {
+  const fetchProgress = useCallback(async (): Promise<ProgressResponse | null> => {
     try {
       const res = await fetch("/api/progress", { cache: "no-store" });
       if (res.ok) {
-        const data = await res.json();
+        const data: ProgressResponse = await res.json();
         setUnlockedModes(data.unlockedModes);
         setModeCounts(data.modeCounts);
-        setTutorialSeen(data.tutorialSeen ?? true);
+        setTutorialSeen(data.tutorialSeen ?? false);
+        setRanks(data.ranks ?? {});
+        prevUnlockedRef.current = data.unlockedModes;
+        prevModeCountsRef.current = data.modeCounts;
+        prevRanksRef.current = data.ranks ?? {};
         setMode((prev) => data.unlockedModes.includes(prev) ? prev : Math.max(...data.unlockedModes));
+        return data;
       }
     } catch {
       // offline — keep current state
     }
+    return null;
   }, []);
 
   useEffect(() => {
@@ -212,6 +227,7 @@ export default function PlayPage() {
   async function submitSolve(expr: string) {
     if (!hand) return;
     setSubmitting(true);
+    setNudge(null);
     try {
       const res = await fetch("/api/solve", {
         method: "POST",
@@ -229,7 +245,50 @@ export default function PlayPage() {
         setHbEarned(data.hbEarned);
         setNewBalance(data.newBalance);
         setSpeedBonus(data.speedBonus ?? 0);
-        fetchProgress();
+
+        const prevUnlocked = [...prevUnlockedRef.current];
+        const prevCounts = { ...prevModeCountsRef.current };
+        const prevRanksSnap = { ...prevRanksRef.current };
+
+        const progress = await fetchProgress();
+        if (progress) {
+          const newCelebrations: Array<{ type: "unlock" | "qualify"; mode: number }> = [];
+          for (const m of progress.unlockedModes) {
+            if (!prevUnlocked.includes(m)) {
+              newCelebrations.push({ type: "unlock", mode: m });
+            }
+          }
+          for (const m of progress.unlockedModes) {
+            const prevCount = prevCounts[m] ?? 0;
+            const newCount = progress.modeCounts[m] ?? 0;
+            const r = progress.ranks?.[m];
+            if (prevCount < 10 && newCount >= 10 && r?.position != null) {
+              newCelebrations.push({ type: "qualify", mode: m });
+            }
+          }
+          if (newCelebrations.length > 0) {
+            setCelebrations(newCelebrations);
+          }
+
+          const curMode = hand.mode;
+          const prevRank = prevRanksSnap[curMode];
+          const newRank = progress.ranks?.[curMode];
+          if (prevRank?.position != null && newRank?.position != null && newRank.position < prevRank.position) {
+            setNudge(`You moved up to #${newRank.position} in ${MODES[curMode].label}!`);
+          } else {
+            const nextM = curMode + 1;
+            const remaining = UNLOCK_THRESHOLD - (progress.modeCounts[curMode] ?? 0);
+            if (nextM <= 9 && !progress.unlockedModes.includes(nextM) && remaining <= 2 && remaining > 0) {
+              setNudge(`${remaining} more to unlock ${MODES[nextM].label}!`);
+            } else {
+              const solveCount = newRank?.solveCount ?? 0;
+              const qualRemaining = 10 - solveCount;
+              if (newRank?.position == null && solveCount > 0 && qualRemaining <= 2 && qualRemaining > 0) {
+                setNudge(`${qualRemaining} more solve${qualRemaining > 1 ? "s" : ""} to qualify!`);
+              }
+            }
+          }
+        }
       }
     } catch {
       // offline -- will queue later
@@ -252,6 +311,12 @@ export default function PlayPage() {
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
+      if (celebrations.length > 0) {
+        if (e.key === "Enter" || e.key === " " || e.key === "n" || e.key === "N") {
+          e.preventDefault();
+        }
+        return;
+      }
       if (phase === "ready" && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
         dealHand();
@@ -286,7 +351,7 @@ export default function PlayPage() {
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [phase, tiles, handleTileTap, handleOp, swapOperands, undo]);
+  }, [phase, tiles, handleTileTap, handleOp, swapOperands, undo, celebrations]);
 
   async function handleTutorialComplete() {
     setTutorialSeen(true);
@@ -374,46 +439,72 @@ export default function PlayPage() {
         <div className="fm-mode-pills">
           {ALL_MODES.map((m) => {
             const locked = !unlockedModes.includes(m);
+            const classicRank = ranks[4];
+            const showBonus = m === 5 && !locked && !bonusDismissed
+              && classicRank?.position != null && classicRank.position <= 3;
             return (
               <button
                 key={m}
                 onClick={() => {
                   if (locked) return;
+                  if (showBonus) setBonusDismissed(true);
                   setMode(m);
                   startReady(m);
                 }}
-                className={`fm-mode-pill ${m === mode ? "is-on" : ""} ${locked ? "is-locked" : ""}`}
+                className={`fm-mode-pill ${m === mode ? "is-on" : ""} ${locked ? "is-locked" : ""} ${showBonus ? "has-bonus" : ""}`}
                 disabled={locked}
                 title={locked ? `Solve ${UNLOCK_THRESHOLD} in ${MODES[m - 1]?.label} to unlock` : MODES[m].short}
               >
                 {locked ? "🔒 " : ""}{MODES[m].label}
+                {showBonus && <span className="fm-bonus-badge">⭐</span>}
               </button>
             );
           })}
         </div>
 
-        {/* Unlock progress pips */}
+        {/* Progress bar */}
         {(() => {
           const nextMode = mode + 1;
-          if (nextMode > 9) return null;
-          if (unlockedModes.includes(nextMode)) return null;
-          const count = modeCounts[mode] || 0;
-          const qualified = count >= UNLOCK_THRESHOLD;
-          if (qualified) return null;
-          const need = UNLOCK_THRESHOLD - count;
-          return (
-            <div className="fm-qp">
-              <div className="fm-qp-pips" role="progressbar" aria-valuemin={0} aria-valuemax={UNLOCK_THRESHOLD} aria-valuenow={count}>
-                {Array.from({ length: UNLOCK_THRESHOLD }, (_, i) => (
-                  <span key={i} className={`fm-qp-pip ${i < count ? "is-on" : ""}`} style={{ "--i": i } as React.CSSProperties} />
-                ))}
+          const modeCount = modeCounts[mode] ?? 0;
+          const rank = ranks[mode];
+          const needsUnlock = nextMode <= 9 && !unlockedModes.includes(nextMode);
+
+          if (needsUnlock) {
+            const pct = Math.min((modeCount / UNLOCK_THRESHOLD) * 100, 100);
+            return (
+              <div className="fm-progress">
+                <div className="fm-progress-track">
+                  <div className="fm-progress-fill" style={{ width: `${pct}%` }} />
+                </div>
+                <div className="fm-progress-label">{modeCount}/{UNLOCK_THRESHOLD} to unlock {MODES[nextMode].label}</div>
               </div>
-              <div className="fm-qp-text">
-                {need === 1 ? (
-                  <span><strong>1 more</strong> {MODES[mode].label} solve to unlock {MODES[nextMode].label}</span>
-                ) : (
-                  <span><strong>{need} more</strong> {MODES[mode].label} solves to unlock {MODES[nextMode].label} · <span className="fm-qp-count">{count}/{UNLOCK_THRESHOLD}</span></span>
-                )}
+            );
+          }
+
+          if (!rank || rank.position == null) {
+            const solveCount = rank?.solveCount ?? modeCount;
+            const pct = Math.min((solveCount / 10) * 100, 100);
+            return (
+              <div className="fm-progress">
+                <div className="fm-progress-track">
+                  <div className="fm-progress-fill" style={{ width: `${pct}%` }} />
+                </div>
+                <div className="fm-progress-label">{solveCount}/10 to qualify for the leaderboard</div>
+              </div>
+            );
+          }
+
+          const totalRanked = rank.totalRanked || 1;
+          const pct = Math.min(((totalRanked - rank.position + 1) / totalRanked) * 100, 100);
+          return (
+            <div className="fm-progress">
+              <div className="fm-progress-track">
+                <div className="fm-progress-fill is-ranked" style={{ width: `${pct}%` }} />
+              </div>
+              <div className="fm-progress-label">
+                {rank.position === 1
+                  ? `You're #1 in ${MODES[mode].label} this week!`
+                  : `#${rank.position} in ${MODES[mode].label} this week`}
               </div>
             </div>
           );
@@ -557,6 +648,9 @@ export default function PlayPage() {
                 {newBalance != null && <span> · Balance: {fmtHB(newBalance)} HB</span>}
               </div>
             )}
+            {nudge && (
+              <div className="fm-nudge">{nudge}</div>
+            )}
             {submitting && (
               <span className="fm-preview-hint">Saving...</span>
             )}
@@ -590,11 +684,53 @@ export default function PlayPage() {
         )}
       </main>
 
+      {/* ── Celebration Overlay ── */}
+      {celebrations.length > 0 && (() => {
+        const cel = celebrations[0];
+        const dismiss = () => setCelebrations((prev) => prev.slice(1));
+        if (cel.type === "unlock") {
+          return (
+            <div className="fm-tut-overlay fm-celebration">
+              <div className="fm-tut-card">
+                <div className="fm-tut-emoji">🔓</div>
+                <h1 className="fm-tut-heading">You unlocked {MODES[cel.mode].label}!</h1>
+                <p className="fm-tut-body">
+                  {MODES[cel.mode]?.cards} cards, target {MODES[cel.mode]?.target ?? "varies"}. Ready to level up?
+                </p>
+                <button className="fm-btn fm-btn-primary" onClick={() => { setMode(cel.mode); startReady(cel.mode); dismiss(); }} type="button">
+                  Try {MODES[cel.mode].label}
+                </button>
+                <button className="fm-btn fm-btn-ghost" onClick={dismiss} type="button">
+                  Keep playing
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div className="fm-tut-overlay fm-celebration">
+            <div className="fm-tut-card">
+              <div className="fm-tut-emoji">📊</div>
+              <h1 className="fm-tut-heading">You&apos;re on the leaderboard!</h1>
+              <p className="fm-tut-body">
+                You qualified in {MODES[cel.mode].label} with 10+ solves.
+              </p>
+              <button className="fm-btn fm-btn-primary" onClick={() => { router.push(`/leaderboard?mode=${cel.mode}&metric=fastest&period=week`); dismiss(); }} type="button">
+                See your rank
+              </button>
+              <button className="fm-btn fm-btn-ghost" onClick={dismiss} type="button">
+                Keep playing
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Footer ── */}
       <footer className="fm-foot">
         <span className="caption">
-          Tap two cards · then an operation. Keys: <kbd>1</kbd>–<kbd>{MODES[mode]?.cards}</kbd>,{" "}
-          <kbd>+</kbd> <kbd>−</kbd> <kbd>*</kbd> <kbd>/</kbd>, <kbd>S</kbd>wap, <kbd>U</kbd>ndo, <kbd>Esc</kbd>.
+          Tap a card · pick an op · tap another card. Keys: <kbd>1</kbd>–<kbd>{MODES[mode]?.cards}</kbd>,{" "}
+          <kbd>+</kbd> <kbd>−</kbd> <kbd>*</kbd> <kbd>/</kbd>, <kbd>U</kbd>ndo, <kbd>Esc</kbd>.
         </span>
       </footer>
     </div>

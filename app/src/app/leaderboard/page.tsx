@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { MODES, MODE_ORDER } from "@/lib/solver";
 import "./leaderboard.css";
 
@@ -42,10 +43,35 @@ function rankBadge(rank: number) {
   return String(rank);
 }
 
+function parseMode(v: string | null): number {
+  if (!v) return 4;
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 2 && n <= 9 ? n : 4;
+}
+
+function parseMetric(v: string | null): "solves" | "fastest" {
+  if (v === "solves" || v === "fastest") return v;
+  return "solves";
+}
+
+function parsePeriod(v: string | null): "all" | "today" | "week" {
+  if (v === "all" || v === "today" || v === "week") return v;
+  return "all";
+}
+
 export default function LeaderboardPage() {
-  const [mode, setMode] = useState(4);
-  const [metric, setMetric] = useState<"solves" | "fastest">("solves");
-  const [period, setPeriod] = useState<"all" | "today" | "week">("all");
+  return (
+    <Suspense fallback={<div className="lb-stage"><div className="lb-empty">Loading...</div></div>}>
+      <LeaderboardContent />
+    </Suspense>
+  );
+}
+
+function LeaderboardContent() {
+  const searchParams = useSearchParams();
+  const [mode, setMode] = useState(() => parseMode(searchParams.get("mode")));
+  const [metric, setMetric] = useState(() => parseMetric(searchParams.get("metric")));
+  const [period, setPeriod] = useState(() => parsePeriod(searchParams.get("period")));
   const [entries, setEntries] = useState<Entry[]>([]);
   const [qualify, setQualify] = useState<QualifyInfo | null>(null);
   const [loading, setLoading] = useState(true);

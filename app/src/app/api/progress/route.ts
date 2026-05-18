@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyChildJwt } from "@/lib/jwt";
 import { createServiceClient } from "@/lib/supabase/server";
+import type { RankData } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
   const childToken = request.cookies.get("child_jwt")?.value;
@@ -33,10 +34,34 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const rankPromises = unlockedModes.map((m) =>
+    supabase.rpc("child_leaderboard_rank", {
+      p_child_id: auth.childId,
+      p_mode: m,
+      p_period: "week",
+    }).then(({ data, error }) => {
+      if (error) console.error(`child_leaderboard_rank mode ${m}:`, error.message);
+      return [m, data] as const;
+    })
+  );
+  const rankResults = await Promise.all(rankPromises);
+
+  const ranks: Record<number, RankData> = {};
+  for (const [m, data] of rankResults) {
+    const row = Array.isArray(data) ? data[0] : data;
+    ranks[m] = {
+      position: row?.rank ?? null,
+      avgTimeMs: row?.avg_time_ms ?? null,
+      totalRanked: row?.total_ranked ?? 0,
+      solveCount: row?.solve_count ?? 0,
+    };
+  }
+
   return NextResponse.json({
     modeCounts,
     unlockedModes,
     unlockThreshold,
     tutorialSeen: child?.tutorial_seen ?? false,
+    ranks,
   });
 }
